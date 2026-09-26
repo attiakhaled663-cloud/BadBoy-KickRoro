@@ -27,7 +27,6 @@
         @keyframes gd2{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,-30px)}}
         @keyframes gd3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.15)}}
 
-        /* ✅ شاشة الدخول النارية */
         .splash {
             position:fixed; inset:0; z-index:9999;
             background:radial-gradient(ellipse at center,#0d2a0a 0%,#0a0f08 70%);
@@ -96,7 +95,6 @@
             padding:20px 12px 90px; max-width:560px; margin:0 auto;
             gap:0;
         }
-        /* ✅ زر العودة في الأعلى */
         .back-bar {
             display:flex; align-items:center; gap:10px;
             width:100%; margin-bottom:18px;
@@ -138,7 +136,6 @@
             50%{opacity:.7;transform:scale(1.12)}
         }
 
-        /* ✅ نافذة المعلومات */
         .info-modal-body { padding:8px 4px; max-height:65vh; overflow-y:auto; }
         .info-tabs {
             display:flex; gap:4px; margin-bottom:12px;
@@ -274,7 +271,6 @@
         @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
         @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-        /* ═══ بطاقة البوت ═══ */
         .bot-list { display:flex; flex-direction:column; gap:10px; overflow-y:auto; padding:4px 2px; }
         .bot-list::-webkit-scrollbar { width:4px; }
         .bot-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.2); border-radius:2px; }
@@ -993,12 +989,12 @@ body {
 
         <!-- ✅ القسم 2: استيراد كود من جهاز آخر -->
         <div class="modal-field">
-            <label><i class="fas fa-file-import"></i> استيراد كود من جهاز آخر — الصق الكود هنا</label>
-            <textarea id="transferCodeIn" placeholder="الصق الكود هنا..." style="min-height:90px;font-family:monospace;font-size:11px;word-break:break-all;resize:none"></textarea>
+            <label><i class="fas fa-file-import"></i> استيراد كود من جهاز آخر — الصق الكود هنا (يقبل أكواد هذا الموقع وأي كود مشابه)</label>
+            <textarea id="transferCodeIn" placeholder="الصق الكود هنا... (RK1- أو أي كود مشابه / base64)" style="min-height:90px;font-family:monospace;font-size:11px;word-break:break-all;resize:none"></textarea>
         </div>
-        <input type="file" id="transferFileInput" accept=".txt,text/plain" style="display:none" onchange="handleTransferFileChoose(event)">
+        <input type="file" id="transferFileInput" accept=".txt,text/plain,.json,.dat,application/json,text/*" style="display:none" onchange="handleTransferFileChoose(event)">
         <div class="modal-actions" style="margin-top:5px">
-            <button class="btn btn-ghost" onclick="document.getElementById('transferFileInput').click()"><i class="fas fa-file-arrow-up"></i> اختر ملف (choose your file)</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('transferFileInput').click()"><i class="fas fa-file-arrow-up"></i> اختر ملف كود (txt / json)</button>
         </div>
         <div style="font-size:11px;color:var(--danger);opacity:.85;margin-top:6px;line-height:1.6">
             <i class="fas fa-triangle-exclamation"></i> تحذير: الاستيراد يمسح كل بيانات هذا الجهاز نهائياً ويستبدلها ببيانات الكود بالكامل (استبدال وليس إضافة).
@@ -2275,31 +2271,445 @@ function utf8ToBase64(str) {
     } catch(e) { return ''; }
 }
 
-// ✅ تحويل base64 إلى نص UTF-8 — متسامح مع المسافات والأسطر الجديدة والـ padding
+// ✅ تحويل base64 إلى نص UTF-8 — متسامح مع المسافات والأسطر الجديدة والحشوة (=) وترميز URL-safe (- و _)
 function base64ToUtf8(b64) {
     try {
-        // ✅ تنظيف الكود من المسافات والأسطر الجديدة
-        b64 = String(b64 || '').replace(/\s+/g, '');
+        var s = String(b64 || '').replace(/\s+/g, '');
+        // ✅ دعم base64 بترميز URL-safe قبل حذف الرموز غير الصالحة
+        s = s.replace(/-/g, '+').replace(/_/g, '/');
         // ✅ إزالة أي أحرف غير صالحة في base64
-        b64 = b64.replace(/[^A-Za-z0-9+/=]/g, '');
+        s = s.replace(/[^A-Za-z0-9+/=]/g, '');
         // ✅ إصلاح الـ padding (يجب أن يكون طول base64 من مضاعفات 4)
-        var pad = b64.length % 4;
+        var pad = s.length % 4;
         if (pad === 1) return ''; // طول غير صالح تماماً
-        if (pad === 2) b64 += '==';
-        else if (pad === 3) b64 += '=';
+        if (pad === 2) s += '==';
+        else if (pad === 3) s += '=';
         // ✅ فك التشفير
         var decoded;
+        try { decoded = atob(s); } catch(e) { return ''; }
+        // ✅ تحويل إلى UTF-8 (مع احتياطي لو كانت البايتات غير UTF-8)
         try {
-            decoded = atob(b64);
-        } catch(e) {
-            // ✅ محاولة بديلة: قسّم الكود وأعد محاولة فك التشفير
-            return '';
-        }
-        // ✅ تحويل إلى UTF-8
-        return decodeURIComponent(Array.prototype.map.call(decoded, function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
+            return decodeURIComponent(Array.prototype.map.call(decoded, function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+        } catch(e) { return decoded; }
     } catch(e) { return ''; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ✅ محرّك قراءة الأكواد — يقبل أكواد هذا الموقع وكل الأكواد المشابهة
+//  يقبل: بادئة RK1- أو بدون بادئة | base64 عادي أو URL-safe | JSON مباشر
+//  ويقبل البُنى: bots / accounts / users / targets / channels / interBotDelay …
+// ═══════════════════════════════════════════════════════════════
+
+// ✅ تأخير التشغيل بين البوتات (يُقرأ من الأكواد المستوردة ويُحفظ محلياً)
+var INTER_BOT_DELAY_KEY = 'redkick_inter_bot_delay_v1';
+var _interBotDelay = 3000;
+function loadInterBotDelay() {
+    try {
+        var v = parseInt(localStorage.getItem(INTER_BOT_DELAY_KEY), 10);
+        if (isFinite(v) && v >= 0) _interBotDelay = v;
+    } catch(e) {}
+}
+function saveInterBotDelay() {
+    try { localStorage.setItem(INTER_BOT_DELAY_KEY, String(Math.max(0, Math.round(_interBotDelay || 0)))); } catch(e) {}
+}
+
+// ✅ قراءة أول قيمة موجودة من قائمة مفاتيح محتملة
+function _xPick(obj, keys) {
+    if (!obj || typeof obj !== 'object') return undefined;
+    for (var i = 0; i < keys.length; i++) {
+        var v = obj[keys[i]];
+        if (v !== undefined && v !== null && v !== '') return v;
+    }
+    return undefined;
+}
+
+// ✅ تحويل أي قيمة إلى منطقي مع قيمة افتراضية
+function _xTruthy(v, def) {
+    if (v === undefined || v === null || v === '') return def;
+    if (typeof v === 'boolean') return v;
+    if (typeof v === 'number') return v !== 0;
+    var s = String(v).trim().toLowerCase();
+    if (s === 'false' || s === '0' || s === 'no' || s === 'off' || s === 'null' || s === 'undefined' || s === 'لا') return false;
+    if (s === 'true' || s === '1' || s === 'yes' || s === 'on' || s === 'نعم') return true;
+    return def;
+}
+function _xBoolOrNull(v) {
+    if (v === undefined || v === null || v === '') return null;
+    var t = _xTruthy(v, null);
+    return (t === true || t === false) ? t : null;
+}
+function _xNumOrNull(v) {
+    if (v === undefined || v === null || v === '') return null;
+    var n = parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
+    return isFinite(n) ? n : null;
+}
+
+// ✅ استخراج نص الرسائل من أي شكل (نص / مصفوفة / كائن)
+function xferMsgText(v) {
+    if (v === undefined || v === null) return '';
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+    if (Array.isArray(v)) {
+        var out = [];
+        for (var i = 0; i < v.length; i++) {
+            var t = xferMsgText(v[i]);
+            if (t) out.push(t);
+        }
+        return out.join('\n');
+    }
+    if (typeof v === 'object') {
+        var p = _xPick(v, ['messages', 'message', 'text', 'content', 'body', 'msg', 'value', 'lines', 'list']);
+        if (p !== undefined) return xferMsgText(p);
+        return '';
+    }
+    return '';
+}
+
+// ✅ توحيد اسم القناة (إزالة الروابط و@ والمسافات)
+function xferSlug(s) {
+    if (s === undefined || s === null) return '';
+    var t = String(s).trim();
+    if (!t) return '';
+    t = t.replace(/^https?:\/\/[^\/]+\//i, '');
+    t = t.replace(/^@+/, '').replace(/^\/+|\/+$/g, '');
+    t = t.replace(/[?#].*$/, '');
+    t = t.replace(/\s+/g, '');
+    return t.toLowerCase();
+}
+
+// ✅ تحليل JSON بشكل متسامح (يتجاهل أي نص زائد حول الكائن)
+function _xTryJson(s) {
+    if (typeof s !== 'string') return null;
+    var t = s.trim();
+    if (!t) return null;
+    if (t.charAt(0) !== '{' && t.charAt(0) !== '[') return null;
+    try {
+        var o = JSON.parse(t);
+        if (o && typeof o === 'object') return o;
+    } catch(e) {}
+    return null;
+}
+function _xTryJsonLoose(s) {
+    var o = _xTryJson(s);
+    if (o) return o;
+    if (typeof s !== 'string') return null;
+    var i = s.indexOf('{');
+    var j = s.lastIndexOf('}');
+    if (i >= 0 && j > i) return _xTryJson(s.substring(i, j + 1));
+    return null;
+}
+
+// ✅ فك أي كود: بادئة أو بدون، base64 أو JSON مباشر، عادي أو URL-safe
+function decodeTransferPayload(raw) {
+    var text = String(raw || '').trim();
+    if (!text) return { ok: false, error: 'الصق الكود أولاً' };
+
+    // 1) كود JSON مباشر (بدون تشفير)
+    var direct = _xTryJsonLoose(text);
+    if (direct) return { ok: true, data: direct, format: 'json' };
+
+    // 2) مرشّحون: الكود كما هو أولاً (حتى لا يتأثر base64 المرمّز URL-safe)
+    var cands = [text];
+    var m = text.match(/^[A-Za-z][A-Za-z0-9 _-]{0,11}-/);
+    if (m) cands.push(text.substring(m[0].length));
+    var dash = text.indexOf('-');
+    if (dash > 0 && dash <= 12) cands.push(text.substring(dash + 1));
+    cands.push(text.replace(/\s+/g, ''));
+
+    var seen = {};
+    for (var i = 0; i < cands.length; i++) {
+        var c = cands[i];
+        if (!c || seen[c]) continue;
+        seen[c] = 1;
+        var dec = base64ToUtf8(c);
+        var obj = _xTryJsonLoose(dec);
+        if (obj) return { ok: true, data: obj, format: 'base64' };
+        // ✅ بعض الأكواد تُغلّف الـ JSON كنص داخل نص
+        var t = String(dec || '').trim();
+        if (t.charAt(0) === '"') {
+            try {
+                var inner = JSON.parse(t);
+                var o2 = _xTryJsonLoose(String(inner));
+                if (o2) return { ok: true, data: o2, format: 'base64-string' };
+            } catch(e) {}
+        }
+    }
+    return { ok: false, error: 'كود تالف أو غير مكتمل — تأكد من نسخ/لصق الكود كاملاً' };
+}
+
+// ✅ تحويل أي عنصر إلى قناة (نص أو كائن) — مع دعم مفتاح الخريطة كاسم قناة
+function xferChannelFrom(it, fallbackSlug) {
+    var slug = '', src = null;
+    var SLUG_KEYS = ['slug', 'channel', 'channelSlug', 'channel_slug', 'channelName', 'channel_name',
+                     'username', 'user', 'userName', 'name', 'target', 'targetSlug', 'target_slug',
+                     'targetUsername', 'kickUsername', 'kick_username', 'login', 'room', 'chatroom', 'streamer'];
+    if (typeof it === 'string' || typeof it === 'number') {
+        slug = xferSlug(it);
+    } else if (it && typeof it === 'object') {
+        src = it;
+        slug = xferSlug(_xPick(it, SLUG_KEYS));
+        if (!slug && it.channel && typeof it.channel === 'object') {
+            slug = xferSlug(_xPick(it.channel, SLUG_KEYS));
+            src = it.channel;
+        }
+    }
+    // ✅ إن لم يوجد اسم داخل الكائن، استخدم مفتاح الخريطة (hash)
+    if (!slug) slug = xferSlug(fallbackSlug);
+    if (!slug) return null;
+    src = src || {};
+    return {
+        slug: slug,
+        messages: xferMsgText(_xPick(src, ['messages', 'message', 'msg', 'msgs', 'text', 'content', 'body', 'lines', 'messageList', 'message_list', 'message_text', 'messageText'])),
+        interval: _xNumOrNull(_xPick(src, ['interval', 'intervalSeconds', 'interval_seconds', 'sendInterval', 'send_interval', 'delay', 'delaySeconds', 'delay_seconds', 'period', 'every', 'speed', 'intervalSec'])),
+        repeat: _xNumOrNull(_xPick(src, ['repeat', 'repeatCount', 'repeat_count', 'repeatTimes', 'repeat_times', 'times', 'loops', 'loopCount', 'count'])),
+        isInfinite: _xBoolOrNull(_xPick(src, ['isInfinite', 'is_infinite', 'infinite', 'forever', 'loop', 'loopForever'])),
+        enabled: _xBoolOrNull(_xPick(src, ['enabled', 'active', 'on', 'isEnabled', 'is_enabled', 'isActive'])),
+        randomDelay: _xBoolOrNull(_xPick(src, ['randomDelay', 'random_delay', 'isRandomDelay'])),
+        delayMin: _xNumOrNull(_xPick(src, ['delayMin', 'delay_min', 'minDelay', 'min_delay', 'randomDelayMin', 'random_delay_min'])),
+        delayMax: _xNumOrNull(_xPick(src, ['delayMax', 'delay_max', 'maxDelay', 'max_delay', 'randomDelayMax', 'random_delay_max'])),
+        randomMessages: _xBoolOrNull(_xPick(src, ['randomMessages', 'random_messages', 'shuffle', 'isRandomMessages'])),
+        chatroomId: _xPick(src, ['chatroomId', 'chatroom_id', 'chatroom', 'roomId', 'room_id']) || null,
+        verified: _xBoolOrNull(_xPick(src, ['verified', 'isVerified', 'is_verified'])),
+        twoMessages: _xBoolOrNull(_xPick(src, ['twoMessages', 'two_messages'])),
+        fourMessages: _xBoolOrNull(_xPick(src, ['fourMessages', 'four_messages'])),
+        stickersOnly: _xBoolOrNull(_xPick(src, ['stickersOnly', 'stickers_only', 'stickers']))
+    };
+}
+
+// ✅ تحويل أي قائمة قنوات (مصفوفة / نص / خريطة) إلى قنوات
+function xferChannelList(list) {
+    var out = [];
+    if (!list) return out;
+    var items = [];   // كل عنصر: { value, key }
+    if (Array.isArray(list)) {
+        for (var i = 0; i < list.length; i++) items.push({ value: list[i], key: null });
+    } else if (typeof list === 'string' || typeof list === 'number') {
+        var parts = String(list).split(/[\n,;|]+/);
+        for (var si = 0; si < parts.length; si++) items.push({ value: parts[si], key: null });
+    } else if (typeof list === 'object') {
+        for (var k in list) {
+            if (!Object.prototype.hasOwnProperty.call(list, k)) continue;
+            var v = list[k];
+            if (v && typeof v === 'object' && !Array.isArray(v)) {
+                var cp = {};
+                for (var kk in v) { if (Object.prototype.hasOwnProperty.call(v, kk)) cp[kk] = v[kk]; }
+                items.push({ value: cp, key: k }); // ✅ المفتاح يُستخدم كاسم قناة عند غياب الاسم
+            } else {
+                items.push({ value: k, key: null }); // ✅ { اسم: قيمة } = اسم القناة هو المفتاح
+            }
+        }
+    }
+    for (var q = 0; q < items.length; q++) {
+        var c = xferChannelFrom(items[q].value, items[q].key);
+        if (c) out.push(c);
+    }
+    return out;
+}
+
+// ✅ استخراج الإعدادات الموحدة من أي شكل
+function xferUnified(obj) {
+    if (!obj || typeof obj !== 'object') return null;
+    var src = _xPick(obj, ['unified', 'unifiedSettings', 'unified_settings', 'unifiedConfig', 'settings', 'general', 'common', 'defaults']);
+    if (!src || typeof src !== 'object' || Array.isArray(src)) src = obj;
+    var keys = ['enabled', 'messages', 'message', 'msg', 'text', 'interval', 'repeat', 'isInfinite', 'randomDelay', 'delayMin', 'delayMax', 'randomMessages'];
+    var has = false;
+    for (var i = 0; i < keys.length; i++) {
+        if (src[keys[i]] !== undefined) { has = true; break; }
+    }
+    if (!has) return null;
+    var u = defaultUnified();
+    u.enabled = _xTruthy(_xPick(src, ['enabled', 'active', 'on', 'isEnabled']), false);
+    var m = xferMsgText(_xPick(src, ['messages', 'message', 'msg', 'text', 'content', 'body']));
+    if (m) u.messages = m;
+    var iv = _xNumOrNull(_xPick(src, ['interval', 'intervalSeconds', 'sendInterval', 'delay', 'period']));
+    if (iv !== null && iv > 0) u.interval = Math.max(1, Math.round(iv));
+    var rp = _xNumOrNull(_xPick(src, ['repeat', 'repeatCount', 'times', 'loops']));
+    if (rp !== null) u.repeat = Math.max(1, Math.round(rp));
+    var inf = _xBoolOrNull(_xPick(src, ['isInfinite', 'infinite', 'forever', 'loop']));
+    if (inf !== null) u.isInfinite = inf;
+    var rd = _xBoolOrNull(_xPick(src, ['randomDelay', 'random_delay']));
+    if (rd !== null) u.randomDelay = rd;
+    var dmin = _xNumOrNull(_xPick(src, ['delayMin', 'minDelay', 'randomDelayMin']));
+    if (dmin !== null && dmin > 0) u.delayMin = Math.round(dmin);
+    var dmax = _xNumOrNull(_xPick(src, ['delayMax', 'maxDelay', 'randomDelayMax']));
+    if (dmax !== null && dmax > 0) u.delayMax = Math.round(dmax);
+    var rm = _xBoolOrNull(_xPick(src, ['randomMessages', 'random_messages', 'shuffle']));
+    if (rm !== null) u.randomMessages = rm;
+    return u;
+}
+
+// ✅ قراءة الإعدادات العامة (الرسائل/السرعة/التكرار …) من أي كائن — تُستخدم كإعدادات افتراضية للقنوات
+//    تدعم الأكواد القديمة التي كانت تحفظ هذه الإعدادات على مستوى الحساب أو على مستوى الجذر
+function xferDefaultsFrom(obj) {
+    if (!obj || typeof obj !== 'object') return null;
+    var d = {
+        messages: xferMsgText(_xPick(obj, ['messages', 'message', 'msg', 'defaultMessage', 'defaultMessages', 'text', 'content', 'body'])),
+        interval: _xNumOrNull(_xPick(obj, ['interval', 'intervalSeconds', 'interval_seconds', 'sendInterval', 'send_interval', 'delay', 'delaySeconds', 'period', 'every'])),
+        repeat: _xNumOrNull(_xPick(obj, ['repeat', 'repeatCount', 'repeat_count', 'times', 'loops', 'count'])),
+        isInfinite: _xBoolOrNull(_xPick(obj, ['isInfinite', 'is_infinite', 'infinite', 'forever', 'loop'])),
+        enabled: _xBoolOrNull(_xPick(obj, ['enabled', 'active', 'on'])),
+        randomDelay: _xBoolOrNull(_xPick(obj, ['randomDelay', 'random_delay'])),
+        delayMin: _xNumOrNull(_xPick(obj, ['delayMin', 'delay_min', 'minDelay', 'min_delay', 'randomDelayMin'])),
+        delayMax: _xNumOrNull(_xPick(obj, ['delayMax', 'delay_max', 'maxDelay', 'max_delay', 'randomDelayMax'])),
+        randomMessages: _xBoolOrNull(_xPick(obj, ['randomMessages', 'random_messages', 'shuffle'])),
+        twoMessages: _xBoolOrNull(_xPick(obj, ['twoMessages', 'two_messages'])),
+        fourMessages: _xBoolOrNull(_xPick(obj, ['fourMessages', 'four_messages'])),
+        stickersOnly: _xBoolOrNull(_xPick(obj, ['stickersOnly', 'stickers_only', 'stickers']))
+    };
+    var has = false;
+    for (var k in d) { if (Object.prototype.hasOwnProperty.call(d, k) && d[k] !== null && d[k] !== '') { has = true; break; } }
+    return has ? d : null;
+}
+
+// ✅ توحيد التوكن (إزالة Bearer والاقتباسات)
+function normalizeToken(t) {
+    if (t === undefined || t === null) return '';
+    var s = String(t).trim();
+    if (!s) return '';
+    s = s.replace(/^bearer\s+/i, '').trim();
+    s = s.replace(/^["']+|["']+$/g, '').trim();
+    return s;
+}
+
+// ✅ توحيد الكود بالكامل إلى بنية الموقع (bots + counter + الإعدادات العامة …)
+function normalizeTransferPayload(data) {
+    var out = { bots: [], counter: null, sendToNonLive: null, exemptChannels: [], bestProxy: null, interBotDelay: null, globalUnified: null, defaults: null };
+    if (!data || typeof data !== 'object') return out;
+
+    // ✅ فك أي تغليف إضافي: {data:…} / {payload:…} / {backup:…} …
+    var core = data;
+    var wrapKeys = ['data', 'payload', 'backup', 'state', 'transfer', 'result', 'value'];
+    for (var wi = 0; wi < wrapKeys.length; wi++) {
+        var w = core[wrapKeys[wi]];
+        if (w && typeof w === 'object' && !Array.isArray(w) && (w.bots || w.accounts || w.users || w.channels)) { core = w; break; }
+    }
+    if (Array.isArray(core)) core = { accounts: core };
+
+    // ✅ الإعدادات العامة على مستوى الكود (تُطبّق على أي قناة ناقصة الإعدادات)
+    var g = xferDefaultsFrom(core) || {};
+    out.defaults = g;
+
+    // ✅ القنوات العامة (تُستخدم لأي حساب بلا قنوات)
+    var gChannels = [];
+    var gList = _xPick(core, ['channels', 'channelList', 'channel_list', 'targets', 'streamers', 'recipients', 'chatrooms', 'rooms']);
+    if (gList) gChannels = xferChannelList(gList);
+
+    // ✅ قائمة الحسابات/البوتات (مصفوفة أو خريطة)
+    var list = _xPick(core, ['bots', 'accounts', 'users', 'profiles', 'botList', 'bot_list', 'accountList', 'account_list']);
+    var arr = [];
+    if (Array.isArray(list)) arr = list;
+    else if (list && typeof list === 'object') {
+        for (var k in list) {
+            if (!Object.prototype.hasOwnProperty.call(list, k)) continue;
+            var v = list[k];
+            if (v && typeof v === 'object') {
+                var vv = {};
+                for (var kk in v) { if (Object.prototype.hasOwnProperty.call(v, kk)) vv[kk] = v[kk]; }
+                if (!vv.token && !vv.access_token && /[A-Za-z0-9_\-]{6,}/.test(k)) vv.token = k;
+                arr.push(vv);
+            }
+        }
+    } else if (core && (core.token || core.access_token)) {
+        arr = [core]; // ✅ كود لحساب واحد فقط
+    }
+
+    var globalUnified = xferUnified(core);
+    out.globalUnified = globalUnified;
+
+    for (var ai = 0; ai < arr.length; ai++) {
+        var a = arr[ai];
+        if (!a || typeof a !== 'object') continue;
+        var token = normalizeToken(_xPick(a, ['token', 'access_token', 'accessToken', 'auth', 'authToken', 'key', 'bearer']));
+        if (!token) continue;
+
+        var bot = {};
+        bot.token = token;
+        bot.username = String(_xPick(a, ['username', 'name', 'user', 'displayName', 'display_name', 'login', 'nickname', 'accountName']) || '').trim().slice(0, 60);
+        var aid = _xNumOrNull(_xPick(a, ['id', 'accountId', 'account_id', 'botId', 'bot_id', 'uid']));
+        bot.id = (aid !== null && aid > 0) ? Math.floor(aid) : null;
+        bot.autoRecover = _xTruthy(_xPick(a, ['autoRecover', 'auto_recover', 'recover']), true);
+        bot.parallel = _xTruthy(_xPick(a, ['parallel', 'parallelSend', 'concurrent']), true);
+        bot.selected = _xTruthy(_xPick(a, ['selected', 'checked', 'isSelected']), false);
+        var wpv = _xNumOrNull(_xPick(a, ['workingProxy', 'working_proxy', 'proxy', 'proxyIndex', 'proxy_index']));
+        bot.workingProxy = (wpv !== null && wpv >= 0) ? Math.round(wpv) : -1;
+
+        // ✅ قنوات الحساب: channels / streamers / targets / قناة مفردة
+        var chs = [];
+        var aList = _xPick(a, ['channels', 'streamers', 'targets', 'channelList', 'channel_list', 'recipients', 'chatrooms', 'rooms', 'subs', 'subscriptions']);
+        if (aList) chs = xferChannelList(aList);
+        var singles = ['channel', 'target', 'streamer', 'recipient', 'room', 'chatroom'];
+        for (var si = 0; si < singles.length; si++) {
+            var sv = a[singles[si]];
+            if (sv === undefined || sv === null || sv === '') continue;
+            var c1 = xferChannelFrom(sv);
+            if (c1) chs.push(c1);
+        }
+        if (chs.length === 0 && gChannels.length) chs = gChannels.slice();
+        bot.channels = chs;
+        // ✅ إعدادات افتراضية خاصة بهذا الحساب (تعمل مع الأكواد القديمة التي تحفظ الرسائل على مستوى الحساب)
+        bot.defaults = xferDefaultsFrom(a) || null;
+        bot.unified = xferUnified(a) || globalUnified || null;
+        out.bots.push(bot);
+    }
+
+    // ✅ العدّاد والحالات العامة
+    var cnt = _xNumOrNull(_xPick(core, ['counter', '_counter', 'nextId', 'next_id', 'accIdCounter', 'idCounter']));
+    out.counter = (cnt !== null && cnt >= 0) ? Math.floor(cnt) : null;
+    out.sendToNonLive = _xBoolOrNull(_xPick(core, ['sendToNonLive', 'send_to_non_live', 'sendNonLive', 'nonLive', 'sendToOffline']));
+    var ex = _xPick(core, ['exemptChannels', 'exempt_channels', 'exceptions', 'exempt', 'alwaysSend']);
+    if (Array.isArray(ex)) out.exemptChannels = ex.slice();
+    else if (typeof ex === 'string') out.exemptChannels = ex.split(/[\n,;|]+/);
+    var bp = _xNumOrNull(_xPick(core, ['bestProxy', 'best_proxy', 'proxyBest']));
+    out.bestProxy = (bp !== null && bp >= 0) ? Math.round(bp) : null;
+    var ibd = _xNumOrNull(_xPick(core, ['interBotDelay', 'inter_bot_delay', 'botDelay', 'delayBetweenBots', 'betweenBotsDelay']));
+    out.interBotDelay = (ibd !== null && ibd >= 0) ? Math.round(ibd) : null;
+    return out;
+}
+
+// ✅ بناء قناة نهائية جاهزة للموقع (مع تطبيق الإعدادات العامة على الناقص)
+function xferFinalChannel(ch, g, guard, gBase) {
+    ch = ch || {};
+    g = g || {};
+    gBase = gBase || {};
+    var slug = xferSlug(ch.slug);
+    if (!slug) return null;
+    if (guard && guard[slug]) return null;
+    if (guard) guard[slug] = 1;
+    function pick(v, dv) { return (v === null || v === undefined) ? dv : v; }
+    // ✅ دمج إعدادات الحساب فوق إعدادات الكود العامة
+    var merged = {};
+    for (var mk in gBase) { if (Object.prototype.hasOwnProperty.call(gBase, mk)) merged[mk] = gBase[mk]; }
+    for (var nk in g) { if (Object.prototype.hasOwnProperty.call(g, nk) && g[nk] !== null && g[nk] !== '') merged[nk] = g[nk]; }
+    g = merged;
+    var messages = (ch.messages && String(ch.messages).trim()) ? ch.messages : (g.messages || '');
+    var interval = Math.max(1, Math.round(pick(ch.interval, pick(g.interval, 5)) || 5));
+    var repeat = Math.max(1, Math.round(pick(ch.repeat, pick(g.repeat, 1)) || 1));
+    var isInfinite = !!pick(ch.isInfinite, pick(g.isInfinite, false));
+    var enabled = pick(ch.enabled, pick(g.enabled, true));
+    var randomDelay = !!pick(ch.randomDelay, pick(g.randomDelay, false));
+    var dMin = Math.max(1, Math.round(pick(ch.delayMin, pick(g.delayMin, 3)) || 3));
+    var dMax = Math.max(1, Math.round(pick(ch.delayMax, pick(g.delayMax, 7)) || 7));
+    if (dMax < dMin) dMax = dMin;
+    return {
+        slug: slug,
+        messages: String(messages || ''),
+        interval: interval,
+        repeat: repeat,
+        isInfinite: isInfinite,
+        enabled: enabled !== false,
+        randomDelay: randomDelay,
+        delayMin: dMin,
+        delayMax: dMax,
+        randomMessages: !!pick(ch.randomMessages, pick(g.randomMessages, false)),
+        chatroomId: ch.chatroomId || null,
+        verified: !!ch.verified,
+        twoMessages: !!pick(ch.twoMessages, pick(g.twoMessages, false)),
+        fourMessages: !!pick(ch.fourMessages, pick(g.fourMessages, false)),
+        stickersOnly: !!pick(ch.stickersOnly, pick(g.stickersOnly, false)),
+        status: 'idle', sent: 0, error: '', retries: 0
+    };
 }
 
 // ✅ فتح نافذة النقل
@@ -2423,13 +2833,14 @@ function exportTransferCodeToFile() {
     }
 }
 
-// ✅ اختيار ملف txt يحتوي كود النقل ووضعه في مربع النص
+// ✅ اختيار ملف يحتوي كود النقل (txt/json/أي ملف نصي) ووضعه في مربع النص
 function handleTransferFileChoose(event) {
     var file = event.target.files && event.target.files[0];
     if (!file) return;
 
-    if (!file.name.toLowerCase().endsWith('.txt')) {
-        toast('الرجاء اختيار ملف txt فقط', 'e');
+    // ✅ حد أعلى للأمان فقط (8 ميجابايت) — يُقبل أي ملف نصي وليس txt فقط
+    if (file.size > 8 * 1024 * 1024) {
+        toast('الملف كبير جداً — الحد 8 ميجابايت', 'e');
         event.target.value = '';
         return;
     }
@@ -2442,7 +2853,7 @@ function handleTransferFileChoose(event) {
             return;
         }
         $('transferCodeIn').value = content;
-        toast('تم تحميل الكود من الملف', 's');
+        toast('تم تحميل الكود من الملف — اضغط استيراد البيانات', 's');
     };
     reader.onerror = function() {
         toast('تعذّر قراءة الملف', 'e');
@@ -2454,94 +2865,81 @@ function handleTransferFileChoose(event) {
 }
 
 // ✅ استيراد كود النقل — استبدال كامل: يمسح كل بيانات هذا الجهاز ويستعيد بيانات الكود بالكامل
+//    ✅ يقبل أكواد هذا الموقع (RK1-…) وأي كود مشابه (بادئة أخرى أو بدون بادئة، base64 عادي أو URL-safe، JSON مباشر)
+//    ✅ يقبل البُنى: bots / accounts / users / targets / channels / interBotDelay … إلخ
 function importTransferCode() {
-    var code = $('transferCodeIn').value.trim();
-    if (!code) {
+    var code = $('transferCodeIn').value.replace(/^\s+/, '');
+    if (!code.trim()) {
         toast('الصق الكود أولاً', 'e');
         return;
     }
 
-    // ✅ التحقق من البادئة — متسامح مع المسافات قبلها
-    code = code.replace(/^\s+/, ''); // إزالة المسافات في البداية
-    if (code.indexOf('RK1-') !== 0) {
-        toast('كود غير صالح — الكود يجب أن يبدأ بـ RK1-', 'e');
+    // ✅ فك الكود بمحرّك القراءة المتسامح
+    var dec = decodeTransferPayload(code);
+    if (!dec.ok) {
+        toast(dec.error || 'كود تالف أو غير مكتمل — تأكد من نسخ الكود كاملاً', 'e');
         return;
     }
 
-    var b64 = code.substring(4);
-    var json = base64ToUtf8(b64);
-    if (!json) {
-        toast('كود تالف أو غير مكتمل — تأكد من نسخ الكود كاملاً', 'e');
-        return;
-    }
+    // ✅ توحيد البنية (يدعم كل الأكواد المشابهة)
+    var norm = normalizeTransferPayload(dec.data);
 
-    var data;
-    try {
-        data = JSON.parse(json);
-    } catch(e) {
-        toast('الكود تالف — تعذّر تحليل البيانات', 'e');
-        return;
-    }
-
-    if (!data || !data.bots || !Array.isArray(data.bots)) {
-        toast('بنية الكود غير صحيحة — لا توجد بوتات', 'e');
-        return;
-    }
-
-    // ✅ تحذير واضح — استبدال كامل: مسح كل بيانات هذا الجهاز ووضع بيانات الكود بدلاً منها
     var existingCount = accounts.length;
-    var newBotsCount = data.bots.length;
-    var confirmMsg = '⚠ استبدال كامل للبيانات\n\nسيتم حذف كل بيانات هذا الجهاز (' + existingCount + ' بوت وكل الإعدادات) نهائياً،\nواستبدالها ببيانات الكود بالكامل (' + newBotsCount + ' بوت بنفس الترتيب والقنوات والرسائل وسرعة الإرسال وكل الإعدادات).\n\nلا يمكن التراجع بعد الاستبدال. هل أنت متأكد؟';
+    var newBotsCount = norm.bots.length;
+
+    // ✅ تحذير واضح — استبدال كامل
+    var confirmMsg = '⚠ استبدال كامل للبيانات\n\n' +
+        'سيتم حذف كل بيانات هذا الجهاز (' + existingCount + ' بوت وكل الإعدادات) نهائياً،\n' +
+        'واستبدالها ببيانات الكود بالكامل (' + newBotsCount + ' بوت بنفس الترتيب والقنوات والرسائل وسرعة الإرسال وكل الإعدادات).\n\n' +
+        'لا يمكن التراجع بعد الاستبدال. هل أنت متأكد؟';
     if (!confirm(confirmMsg)) return;
 
     // ✅ إيقاف أي بوتات تعمل حالياً على هذا الجهاز قبل المسح
     for (var si = 0; si < accounts.length; si++) {
         accounts[si].isSending = false;
     }
+    if (typeof _forceStopAll !== 'undefined') _forceStopAll = true;
+    try {
+        if (typeof _botStartQueue !== 'undefined') _botStartQueue = [];
+        if (typeof _botStartTimer !== 'undefined' && _botStartTimer) { clearTimeout(_botStartTimer); _botStartTimer = null; }
+    } catch(e) {}
 
     // ✅ مسح كل البيانات الحالية بالكامل
     accounts = [];
     selectedBots = {};
 
     var importedCount = 0;
+    var maxId = 0;
+    var seenTokens = {};
 
     // ✅ استعادة البوتات بنفس الترتيب تماماً كما في الكود
-    for (var bi = 0; bi < data.bots.length; bi++) {
-        var b = data.bots[bi];
+    for (var bi = 0; bi < norm.bots.length; bi++) {
+        var b = norm.bots[bi];
         if (!b || !b.token) continue;
+        if (seenTokens[b.token]) continue; // ✅ تجاهل التوكن المكرر
+        seenTokens[b.token] = 1;
 
         // ✅ بناء القنوات (نفس الرسائل وسرعة الإرسال وكل الخصائص)
         var channels = [];
-        if (b.channels) {
-            for (var ci = 0; ci < b.channels.length; ci++) {
-                var ch = b.channels[ci];
-                channels.push({
-                    slug: ch.slug,
-                    messages: ch.messages || '',
-                    interval: ch.interval || 5,
-                    repeat: ch.repeat || 1,
-                    isInfinite: !!ch.isInfinite,
-                    enabled: ch.enabled !== false,
-                    randomDelay: !!ch.randomDelay,
-                    delayMin: ch.delayMin || 3,
-                    delayMax: ch.delayMax || 7,
-                    randomMessages: !!ch.randomMessages,
-                    chatroomId: ch.chatroomId || null,
-                    verified: !!ch.verified,
-                    twoMessages: !!ch.twoMessages,
-                    fourMessages: !!ch.fourMessages,
-                    stickersOnly: !!ch.stickersOnly,
-                    status: 'idle', sent: 0, error: '', retries: 0
-                });
-            }
+        var guard = {};
+        for (var ci = 0; ci < b.channels.length; ci++) {
+            var fc = xferFinalChannel(b.channels[ci], b.defaults || norm.defaults, guard, norm.defaults);
+            if (fc) channels.push(fc);
         }
 
-        // ✅ نحافظ على نفس المعرف الأصلي (نفس الترتيب والهوية بالضبط)
-        var botId = (typeof b.id === 'number') ? b.id : (importedCount + 1);
+        // ✅ نحافظ على نفس المعرف الأصلي (نفس الترتيب والهوية بالضبط) — ومع الحماية من التكرار
+        var botId = (typeof b.id === 'number' && b.id > 0) ? Math.floor(b.id) : (importedCount + 1);
+        if (findBot(botId)) {
+            botId = 0;
+            for (var qi = 0; qi < accounts.length; qi++) { if (accounts[qi].id >= botId) botId = accounts[qi].id + 1; }
+            if (!botId) botId = 1;
+        }
+        if (botId > maxId) maxId = botId;
+
         var bot = {
             id: botId,
             token: b.token,
-            username: b.username,
+            username: b.username || ('حساب #' + botId),
             channels: channels,
             autoRecover: (b.autoRecover !== false),
             parallel: (b.parallel !== false),
@@ -2549,7 +2947,7 @@ function importTransferCode() {
             sent: 0,
             workingProxy: (typeof b.workingProxy === 'number' && b.workingProxy >= 0) ? b.workingProxy : -1,
             workingSendProxy: -1,
-            // ✅ استعادة الإعدادات الموحدة الخاصة بهذا الحساب فقط (أو من كود قديم عام إن وُجد)
+            // ✅ الإعدادات الموحدة الخاصة بهذا الحساب (أو من الكود القديم العام، وإلا الافتراضية)
             unified: b.unified ? {
                 enabled: !!b.unified.enabled,
                 messages: b.unified.messages || '',
@@ -2560,18 +2958,7 @@ function importTransferCode() {
                 delayMin: b.unified.delayMin || 240,
                 delayMax: b.unified.delayMax || 300,
                 randomMessages: !!b.unified.randomMessages
-            } : (data.unifiedSettings ? {
-                // ✅ توافق مع الأكواد القديمة: كانت الإعدادات الموحدة عامة لكل الحسابات
-                enabled: !!data.unifiedSettings.enabled,
-                messages: data.unifiedSettings.messages || '',
-                interval: data.unifiedSettings.interval || 5,
-                repeat: data.unifiedSettings.repeat || 1,
-                isInfinite: data.unifiedSettings.isInfinite !== false,
-                randomDelay: data.unifiedSettings.randomDelay !== false,
-                delayMin: data.unifiedSettings.delayMin || 240,
-                delayMax: data.unifiedSettings.delayMax || 300,
-                randomMessages: !!data.unifiedSettings.randomMessages
-            } : defaultUnified())
+            } : defaultUnified()
         };
         accounts.push(bot);
         if (b.selected) selectedBots[botId] = true;
@@ -2579,34 +2966,38 @@ function importTransferCode() {
     }
 
     // ✅ استعادة عدّاد المعرفات — لضمان عدم تعارض أي بوت جديد يُضاف لاحقاً
-    if (typeof data.counter === 'number' && data.counter >= 0) {
-        accIdCounter = data.counter;
+    if (typeof norm.counter === 'number' && norm.counter >= 0) {
+        accIdCounter = norm.counter;
     } else {
         accIdCounter = 0;
-        for (var ai = 0; ai < accounts.length; ai++) {
-            if (accounts[ai].id > accIdCounter) accIdCounter = accounts[ai].id;
-        }
     }
+    if (accIdCounter < maxId) accIdCounter = maxId;
 
     // ✅ استعادة حالة الإرسال لغير المباشر
-    if (typeof data.sendToNonLive === 'boolean') {
-        sendToNonLive = data.sendToNonLive;
+    if (typeof norm.sendToNonLive === 'boolean') {
+        sendToNonLive = norm.sendToNonLive;
         saveSendToNonLive();
         setToggle('tgSendNonLive', sendToNonLive);
     }
 
     // ✅ استعادة قنوات الاستثناء (إرسال دائم في كل الحالات)
-    if (Array.isArray(data.exemptChannels)) {
-        exemptChannels = data.exemptChannels.map(normSlug).filter(Boolean);
+    if (Array.isArray(norm.exemptChannels) && norm.exemptChannels.length) {
+        exemptChannels = norm.exemptChannels.map(normSlug).filter(Boolean);
         saveExemptChannels();
         updateExemptBadge();
         if (typeof renderExemptList === 'function') renderExemptList();
     }
 
     // ✅ استعادة أفضل بروكسي محفوظ
-    if (typeof data.bestProxy === 'number' && data.bestProxy >= 0) {
-        _bestProxy = data.bestProxy;
+    if (typeof norm.bestProxy === 'number' && norm.bestProxy >= 0) {
+        _bestProxy = norm.bestProxy;
         saveBestProxy();
+    }
+
+    // ✅ استعادة تأخير التشغيل بين البوتات (interBotDelay) إن وُجد في الكود
+    if (typeof norm.interBotDelay === 'number' && norm.interBotDelay >= 0) {
+        _interBotDelay = norm.interBotDelay;
+        saveInterBotDelay();
     }
 
     // ✅ مسح أي حالة تشغيل قديمة كانت على هذا الجهاز (غير صالحة بعد الاستبدال)
@@ -2618,6 +3009,9 @@ function importTransferCode() {
     if (typeof updateBulkUI === 'function') updateBulkUI();
     forceUIUpdate();
     closeTransferModal();
+
+    // ✅ السماح بتشغيل جديد بعد الإيقاف الإجباري
+    setTimeout(function() { if (typeof _forceStopAll !== 'undefined') _forceStopAll = false; }, 500);
 
     if (importedCount > 0) {
         toast('✓ تم استبدال بيانات الجهاز بالكامل — تم استعادة ' + importedCount + ' بوت', 's');
@@ -4550,7 +4944,7 @@ async function startSelectedBots() {
     _bulkRunActive = true; // ✅ تفعيل وضع "التشغيل الجماعي" — أي تحديد جديد بعد كده يلتحق بالتشغيل تلقائياً
     if (typeof updateBulkUI === 'function') updateBulkUI(); // ✅ تحديث فوري لزر تشغيل المحددة ليتحول للأحمر ☢️
     _botStartQueue = toStart.slice();
-    toast('تشغيل ' + toStart.length + ' بوت (كل بوت بعد 3 ثوانٍ)', 's');
+    toast('تشغيل ' + toStart.length + ' بوت (كل بوت بعد ' + (_interBotDelay/1000) + ' ثانية)', 's');
 
     // ✅ شغّل البوت الأول فوراً
     _startNextBotInQueue();
@@ -4579,7 +4973,7 @@ function _startNextBotInQueue() {
         _botStartTimer = setTimeout(function() {
             _botStartTimer = null;
             _startNextBotInQueue();
-        }, 3000);
+        }, Math.max(0, _interBotDelay || 0));
     } else {
         _botStartTimer = null;
     }
@@ -5297,6 +5691,7 @@ async function init() {
     loadFromStorage();
     loadSendToNonLive(); // ✅ استعادة حالة زر الإرسال لغير المباشر
     setToggle('tgSendNonLive', sendToNonLive); // ✅ ضبط الزر في الترويسة
+    loadInterBotDelay(); // ✅ استعادة تأخير التشغيل بين البوتات (يُحدَّث عند استعادة كود)
     loadExemptChannels(); // ✅ استعادة قنوات الاستثناء (إرسال دائم في كل الحالات)
     updateExemptBadge();  // ✅ ضبط عدّاد زر الاستثناء في الترويسة
     try { NetworkGuard.start(); } catch(e) {}
@@ -5585,7 +5980,6 @@ function SetupPersistence() {
         }
     };
 
-    // 2. تحديث حالة التشغيل دورياً
     setInterval(function() {
         if (WakeLockMgr.anyBotRunning()) {
             saveRunningState();
@@ -5595,27 +5989,21 @@ function SetupPersistence() {
         }
     }, 3000);
 
-    // 3. عند تغير ظهور الصفحة (التبديل بين التطبيقات)
     document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'visible') {
-            // عاد المستخدم — أعد طلب Wake Lock
             WakeLockMgr.reAcquire();
         }
     });
 
-    // 4. تحذير قبل إغلاق الصفحة إذا كانت بوتات تعمل
     window.addEventListener('beforeunload', function(e) {
         if (WakeLockMgr.anyBotRunning()) {
-            // حفظ الحالة قبل الإغلاق
             saveRunningState();
-            // إظهار تحذير
             e.preventDefault();
             e.returnValue = 'يوجد بوتات تعمل. هل أنت متأكد من الخروج؟ سيتم استئنافها عند العودة.';
             return e.returnValue;
         }
     });
 
-    // 5. تحرير Wake Lock عند إيقاف جميع البوتات
     var origStopAll = stopAllBots;
     stopAllBots = function() {
         origStopAll();
@@ -5628,7 +6016,6 @@ function SetupPersistence() {
 }
 
 function showKeepAliveBadge(show) {
-    // تم إزالة الشارة — الدالة فارغة للتوافق
 }
 
 document.addEventListener('keydown', function(e) {
@@ -5646,7 +6033,6 @@ document.addEventListener('keydown', function(e) {
 
 init();
 
-// إعادة تحميل الصفحة كل 24 ساعة
 setInterval(() => {
     location.reload();
 }, 24 * 60 * 60 * 1000);
@@ -5732,9 +6118,8 @@ document.addEventListener('DOMContentLoaded',async()=>{await kickHandleCallback(
 
 
 <script>
-/* ================= BadBoy Kick — بوابة كلمة سر وضع رسائلي السرّية ================= */
 (function () {
-    var SECRET_PASSWORD = "01221053263#Ledo";
+    var SECRET_PASSWORD = "01131711082#Nada";
     var UNLOCKED = false;
 
     function ask() {
@@ -5765,7 +6150,6 @@ document.addEventListener('DOMContentLoaded',async()=>{await kickHandleCallback(
     install();
 })();
 
-/* ================= منع قائمة النقر الطويل + تحسين تجربة التطبيق ================= */
 document.addEventListener("contextmenu", function (e) {
     var el = e.target;
     var editable = el.closest && el.closest('input, textarea, [contenteditable="true"], [contenteditable=""]');
@@ -5779,12 +6163,6 @@ document.addEventListener("dragstart", function (e) { e.preventDefault(); });
 <!-- token-check v3 fix -->
 <script>
 
-/* ============================================================
-   فحص حالة التوكنات — نسخة v3 (إصلاح الشاشة التي لا تتوقف أبداً)
-   - مهلة لكل طلب + مهلة إجمالية لكل توكن => لا تعليق نهائياً
-   - تحديث تقدّم حقيقي أثناء الفحص (X / Y)
-   - تصنيف دقيق: يعمل / منتهي / تعذّر الفحص
-   ============================================================ */
 var _TC_REQ_TIMEOUT        = 7000;
 var _TC_TOKEN_BUDGET       = 22000;
 var _TC_CONCURRENCY        = 6;
@@ -5883,7 +6261,6 @@ async function checkSingleTokenStatus(bot){
       var uname = src && (src.username || src.slug || src.name);
       if (uname){ return { status:'active', username:String(uname), proxy:px.name }; }
 
-      /* 200 ولكن بدون أي بيانات مستخدم (مثال: {} ) = دليل قوي على توكن منتهي/غير صالح */
       noUserEvidence = true;
     }
     if (Date.now() > deadline){ break; }
@@ -5991,7 +6368,6 @@ async function runTokenCheck(){
       paint('جاري فحص');
     });
 
-    /* إعادة محاولة واحدة للحسابات الغامضة */
     var pending = [];
     for (var i = 0; i < total; i++){
       if (!results[i] || results[i].status === 'unknown'){ pending.push(i); }
