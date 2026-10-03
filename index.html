@@ -5,6 +5,43 @@
     <title>BadBoy Kick</title>
     <link rel="icon" type="image/png" href="./RedKick_files/ab46995c-be54-4f0c-97d9-dc9965e3150b.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+    (function(){
+        window.__silentAlert = function(){};
+        try { window.alert = function(){}; } catch (e) {}
+
+        function hideNode(n){
+            if (!n || n.nodeType !== 1) return;
+            try { n.style.setProperty('display','none','important'); n.setAttribute('aria-hidden','true'); } catch(e){}
+        }
+        function killToast(n){
+            if (!n || n.nodeType !== 1) return;
+            var cls = (typeof n.className === 'string') ? n.className : '';
+            if (/(^|\s)toast(\s|$)/.test(cls) || /(^|\s)toast-(s|e|i)(\s|$)/.test(cls)) {
+                try { n.remove(); } catch(e) { hideNode(n); }
+            }
+            var kids = n.children ? n.children : [];
+            for (var k = 0; k < kids.length; k++) killToast(kids[k]);
+        }
+        function boot(){
+            var tb = document.getElementById('toasts');
+            if (tb) { hideNode(tb); tb.innerHTML = ''; }
+            var ns = document.getElementById('netStatus');
+            if (ns) hideNode(ns);
+            try {
+                var mo = new MutationObserver(function(muts){
+                    for (var i = 0; i < muts.length; i++){
+                        var added = muts[i].addedNodes || [];
+                        for (var j = 0; j < added.length; j++) killToast(added[j]);
+                    }
+                });
+                mo.observe(document.documentElement, { childList:true, subtree:true });
+            } catch(e) {}
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+        else boot();
+    })();
+    </script>
     <script src="api.js"></script>
     <style>
         :root {
@@ -262,7 +299,7 @@
         @keyframes spin{to{transform:rotate(360deg)}}
         .spinner-sm { width:14px; height:14px; border:2px solid transparent; border-top-color:currentColor; border-radius:50%; animation:spin .6s linear infinite; display:inline-block; }
 
-        .toast-box { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:6px; align-items:center; }
+        .toast-box { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:9999; display:none !important; flex-direction:column; gap:6px; align-items:center; }
         .toast { padding:10px 22px; border-radius:10px; font-weight:700; font-size:13px; box-shadow:0 4px 24px rgba(0,0,0,0.5); animation:toastIn .3s ease; font-family:inherit; max-width:90vw; }
         .toast-s { background:linear-gradient(135deg,#53fc18,#9dff6b); color:#000; }
         .toast-e { background:rgba(200,0,0,0.92); color:#fff; }
@@ -465,7 +502,7 @@
             position:fixed; top:12px; left:50%; transform:translateX(-50%);
             z-index:9000; padding:8px 18px; border-radius:10px;
             font-size:12px; font-weight:700; font-family:inherit;
-            display:none; align-items:center; gap:8px;
+            display:none !important; align-items:center; gap:8px;
             box-shadow:0 4px 24px rgba(0,0,0,0.6);
         }
         .net-status.show { display:flex; animation:netIn .3s ease; }
@@ -3427,14 +3464,8 @@ function showPhase(name) {
 }
 
 function toast(msg, type) {
-    var t = document.createElement('div');
-    t.className = 'toast toast-' + (type || 'i');
-    t.textContent = msg;
-    $('toasts').appendChild(t);
-    setTimeout(function() {
-        t.style.opacity = '0'; t.style.transition = 'opacity .3s';
-        setTimeout(function(){ t.remove(); }, 300);
-    }, 3000);
+    /* ⛔ تم تعطيل الرسائل العلوية بالكامل (بناءً على طلب المستخدم) — لا تعرض أي شيء */
+    return;
 }
 
 function escH(s) {
@@ -4413,78 +4444,39 @@ function saveSettings() {
 // ═══════════════════════════════════════
 var activeChannelSlug = null;
 
-const stickersList = `سبحان الله وبحمده، سبحان الله العظيم 🤍
-[emote:3302862:destrox88xElmoShrug]
-[emote:3302862:destrox88xElmoShrug]
-!xp
-جَزاكْ اللّٰه خَيْرْ
-[emote:4851601:dommyxmommyevilduck]
-[emote:4851601:dommyxmommyevilduck]
-!points
-لا إله إلا الله، سيّدنا محمد رسول الله
-[emote:3198871:dommyxmommycatdance]
-[emote:3301296:destrox88xKermitSip]
-[emote:4851601:dommyxmommyevilduck]
-اللهم صل وسلم على نبينا محمد
-[emote:3301296:destrox88xKermitSip]
-[emote:3301296:destrox88xKermitSip]
-!xp
-ما شاء الله، بارك الله فيك
-[emote:5470844:kickclassic]
-[emote:3301296:destrox88xKermitSip]
-[emote:4851601:dommyxmommyevilduck]
-استغفر الله العظيم وأتوب إليه
-[emote:3301310:destrox88xSonic]
-[emote:5470844:kickclassic]
-!points
-حسبي الله لا اله الا هو عليه توكلت وهو رب العرش العظيم
-[emote:5756668:EZ]
-[emote:3301296:destrox88xKermitSip]
-[emote:5470844:kickclassic]
-الله أكبر، والحمد لله، وسبحان الله
-[emote:3301316:destrox88xTails]
-[emote:3301310:destrox88xSonic]
-[emote:4157273:dommyxmommyANGRYGROGU]
-ربنا يوفقك ويكتبلك الخير
-[emote:4157265:dommyxmommyKISSY]
-[emote:4157273:dommyxmommyANGRYGROGU]
-[emote:5756668:EZ]
-ربنا يفتحها عليك ويرزقك من واسع فضله
-[emote:4157273:dommyxmommyANGRYGROGU]
-[emote:3301310:destrox88xSonic]
-!points
-اللهم اغفر لنا وارحمنا واهدنا
-[emote:4157273:dommyxmommyANGRYGROGU]
-[emote:4157265:dommyxmommyKISSY]
-[emote:4157265:dommyxmommyKISSY]
-ربنا يباركلك في وقتك ومجهودك
-!points
-[emote:4157273:dommyxmommyANGRYGROGU]
-[emote:5756668:EZ]
-ربنا يرزقك التوفيق والسداد
-[emote:3301310:destrox88xSonic]
-[emote:3301316:destrox88xTails]
-!level
-لا حول ولا قوة إلا بالله
-[emote:3301316:destrox88xTails]
-[emote:4157273:dommyxmommyANGRYGROGU]
-!points
-اللهم ارزقنا الخير والبركة
-[emote:3301316:destrox88xTails]
-[emote:4157273:dommyxmommyANGRYGROGU]
-[emote:5756668:EZ]
-ربّنا يكرمَك ويجزيك كل خَير🤍
-[emote:3307851:dommyxmommyhappy]
-[emote:4157265:dommyxmommyKISSY]
-!points
-اللهم اجعلها ساعة خير وبركة
-[emote:4157265:dommyxmommyKISSY]
-[emote:4157273:dommyxmommyANGRYGROGU]
-[emote:3301316:destrox88xTails]
-ربنا افتح بيننا وبين قومنا بالحق وأنت خير الفاتحين
-[emote:4851601:dommyxmommyevilduck]
-[emote:4157273:dommyxmommyANGRYGROGU]
-[emote:3301316:destrox88xTails]`;
+var stickersList = '';
+var stickersListLoaded = false;
+
+var STICKERS_JSON_URLS = [
+    'https://github.com/attiakhaled663-cloud/BadBoy-Kick/blob/main/emote.json',
+    'https://raw.githubusercontent.com/attiakhaled663-cloud/BadBoy-Kick/refs/heads/main/emote.json'
+];
+
+function ensureStickersList() {
+    if (stickersListLoaded) return Promise.resolve(stickersList);
+    var tryNext = function (idx) {
+        if (idx >= STICKERS_JSON_URLS.length) {
+            console.error('فشل تحميل الرسائل من السيرفر');
+            return Promise.resolve('');
+        }
+        return fetch(STICKERS_JSON_URLS[idx])
+            .then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(function (data) {
+                var arr = data; // emote.json = مصفوفة JSON نقية من الرسائل فقط
+                stickersList = Array.isArray(arr) ? arr.join('\n') : '';
+                stickersListLoaded = true;
+                return stickersList;
+            })
+            .catch(function (e) {
+                console.error('⚠️ تعذر تحميل رسائل stickersonly من: ' + STICKERS_JSON_URLS[idx], e);
+                return tryNext(idx + 1);
+            });
+    };
+    return tryNext(0);
+}
 
 function openChannelSettings(slug) {
     if (activeModalBotId === null) return;
@@ -4508,13 +4500,15 @@ function openChannelSettings(slug) {
     setToggle('tgStickersOnly', !!ch.stickersOnly);
 
     if (ch.stickersOnly) {
-        $('cMessages').value = stickersList;
-        $('cMessages').readOnly = true;
+        ensureStickersList().then(function (list) {
+            $('cMessages').value = list;
+            $('cMessages').readOnly = true;
+            if (!list) toast('تعذر تحميل رسائل stickersonly — تأكد من رفع emote.json واستبدال YOUR_USERNAME/YOUR_REPO في الرابط', 'e');
+        });
     } else {
         $('cMessages').readOnly = false;
     }
 
-    // ✅ إظهار/إخفاء خانات التأخير العشوائي
     $('randomDelayFields').style.display = ch.randomDelay ? 'grid' : 'none';
     var cIntervalWrap = $('cIntervalWrap');
     if (cIntervalWrap) {
@@ -4600,8 +4594,11 @@ function cToggleStickersOnly() {
     ch.stickersOnly = !ch.stickersOnly;
     setToggle('tgStickersOnly', ch.stickersOnly);
     if (ch.stickersOnly) {
-        $('cMessages').value = stickersList;
-        $('cMessages').readOnly = true;
+        ensureStickersList().then(function (list) {
+            $('cMessages').value = list;
+            $('cMessages').readOnly = true;
+            if (!list) toast('تعذر تحميل رسائل stickersonly — تأكد من رفع emote.json واستبدال YOUR_USERNAME/YOUR_REPO في الرابط', 'e');
+        });
     } else {
         $('cMessages').readOnly = false;
     }
@@ -4646,7 +4643,6 @@ var _botStartTimer = null;        // مؤقّت التأخير بين البوت
 var _forceStopAll = false;        // علم الإيقاف الإجباري
 var _bulkRunActive = false;       // ✅ يصبح true بعد الضغط على "تشغيل المحددة" — أي بوت يتم تحديده بعدها يلتحق بالتشغيل تلقائياً
 
-// ✅ زر واحد مدمج: تشغيل المحددة ↔ إيقاف المحدد (☢️)
 var _lastBulkToggleTime = 0;      // آخر وقت تم فيه التشغيل أو الإيقاف
 var BULK_TOGGLE_COOLDOWN = 3000;  // 3 ثوانٍ
 
@@ -4672,17 +4668,14 @@ async function startSelectedBots() {
         if (selectedBots[id]) {
             var b = findBot(parseInt(id));
             if (b && !b.isSending) {
-                // ✅ إذا الإعدادات الموحدة الخاصة بهذا الحساب مفعّلة ولها رسائل — كل قنواته تعتبر صالحة
                 var bUnified = getBotUnified(b);
                 var unifiedReady = bUnified.enabled && bUnified.messages && bUnified.messages.trim();
                 var validChannels = 0;
                 if (unifiedReady) {
-                    // ✅ الإعدادات الموحدة — أي قناة مفعّلة تعتبر صالحة
                     for (var c = 0; c < b.channels.length; c++) {
                         if (b.channels[c].enabled !== false) validChannels++;
                     }
                 } else {
-                    // ✅ الإعدادات الموحدة معطّلة — تحقق من رسائل القناة
                     for (var c = 0; c < b.channels.length; c++) {
                         if (b.channels[c].messages && b.channels[c].messages.trim()) validChannels++;
                     }
@@ -4728,12 +4721,10 @@ function _startNextBotInQueue() {
         _botStartTimer = null;
         return;
     }
-    // ✅ خذ البوت التالي وشغّله
     var bot = _botStartQueue.shift();
     if (bot && !bot.isSending) {
         startBotLoop(bot).catch(function(){});
     }
-    // ✅ إذا يوجد بوت تالي، انتظر 3 ثوانٍ ثم شغّله
     if (_botStartQueue.length > 0 && !_forceStopAll) {
         _botStartTimer = setTimeout(function() {
             _botStartTimer = null;
@@ -5823,7 +5814,7 @@ async function kickChallenge(v){
   return kickB64(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
 }
 async function kickOfficialLogin(){
-  if(KICK_CLIENT_ID==='PUT_YOUR_CLIENT_ID_HERE'){alert('ضع Client ID أولاً.');return;}
+  if(KICK_CLIENT_ID==='PUT_YOUR_CLIENT_ID_HERE'){__silentAlert('ضع Client ID أولاً.');return;}
   const state=kickRandomString(24), verifier=kickRandomString(32);
   sessionStorage.setItem('kick_oauth_state',state);
   sessionStorage.setItem('kick_oauth_verifier',verifier);
@@ -5840,7 +5831,7 @@ async function kickHandleCallback(){
   if(!code)return;
   const state=q.get('state'), saved=sessionStorage.getItem('kick_oauth_state');
   const verifier=sessionStorage.getItem('kick_oauth_verifier');
-  if(!state||state!==saved||!verifier){alert('فشل التحقق من OAuth state.');return;}
+  if(!state||state!==saved||!verifier){__silentAlert('فشل التحقق من OAuth state.');return;}
   try{
     const body=new URLSearchParams({
       grant_type:'authorization_code',code,client_id:KICK_CLIENT_ID,
@@ -5851,12 +5842,12 @@ async function kickHandleCallback(){
       method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body
     });
     const d=await r.json().catch(()=>({}));
-    if(!r.ok||!d.access_token){console.error(d);alert('Kick رفض تسجيل الدخول. راجع بيانات التطبيق وRedirect URL.');return;}
+    if(!r.ok||!d.access_token){console.error(d);__silentAlert('Kick رفض تسجيل الدخول. راجع بيانات التطبيق وRedirect URL.');return;}
     sessionStorage.setItem('kick_access_token',d.access_token);
     if(d.refresh_token)sessionStorage.setItem('kick_refresh_token',d.refresh_token);
     sessionStorage.removeItem('kick_oauth_state');sessionStorage.removeItem('kick_oauth_verifier');
     history.replaceState({},document.title,KICK_REDIRECT_URI);
-  }catch(e){console.error(e);alert('تعذر الاتصال بـKick OAuth.');}
+  }catch(e){console.error(e);__silentAlert('تعذر الاتصال بـKick OAuth.');}
 }
 async function kickOfficialRefreshStatus(){
   const el=document.getElementById('kickOfficialStatus'),btn=document.getElementById('kickLoginBtn');
@@ -5904,10 +5895,10 @@ document.addEventListener('DOMContentLoaded',async()=>{await kickHandleCallback(
             pw = String(pw).trim();
             if (pw === SECRET_PASSWORD) {
                 UNLOCKED = true;
-                try { alert("\u2705 \u062a\u0645 \u062a\u0641\u0639\u064a\u0644 \u0648\u0636\u0639 \u0631\u0633\u0627\u0626\u0644\u064a \u0627\u0644\u0633\u0631\u0651\u064a\u0629"); } catch (e) {}
+                try { __silentAlert("\u2705 \u062a\u0645 \u062a\u0641\u0639\u064a\u0644 \u0648\u0636\u0639 \u0631\u0633\u0627\u0626\u0644\u064a \u0627\u0644\u0633\u0631\u0651\u064a\u0629"); } catch (e) {}
                 return original.apply(this, arguments);
             }
-            try { alert("\u274c \u0643\u0644\u0645\u0629 \u0627\u0644\u0633\u0631 \u063a\u064a\u0631 \u0635\u062d\u064a\u062d\u0629"); } catch (e) {}
+            try { __silentAlert("\u274c \u0643\u0644\u0645\u0629 \u0627\u0644\u0633\u0631 \u063a\u064a\u0631 \u0635\u062d\u064a\u062d\u0629"); } catch (e) {}
         };
     }
     install();
