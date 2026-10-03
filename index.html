@@ -4448,9 +4448,21 @@ var stickersList = '';
 var stickersListLoaded = false;
 
 var STICKERS_JSON_URLS = [
-    'https://github.com/attiakhaled663-cloud/BadBoy-Kick/blob/main/emote.json',
     'https://raw.githubusercontent.com/attiakhaled663-cloud/BadBoy-Kick/refs/heads/main/emote.json'
 ];
+
+// emote.json = نص عادي: كل سطر رسالة، بدون أقواس أو فواصل أو علامات اقتباس
+function parseStickersText(raw) {
+    var txt = String(raw || '').replace(/^\uFEFF/, '').trim();
+    if (!txt || txt.charAt(0) === '<') return '';
+    if (txt.charAt(0) === '[') {
+        try {
+            var arr = JSON.parse(txt);
+            if (Array.isArray(arr)) txt = arr.join('\n');
+        } catch (e) {}
+    }
+    return txt.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean).join('\n');
+}
 
 function ensureStickersList() {
     if (stickersListLoaded) return Promise.resolve(stickersList);
@@ -4459,14 +4471,15 @@ function ensureStickersList() {
             console.error('فشل تحميل الرسائل من السيرفر');
             return Promise.resolve('');
         }
-        return fetch(STICKERS_JSON_URLS[idx])
+        return fetch(STICKERS_JSON_URLS[idx], { cache: 'no-store' })
             .then(function (r) {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
-                return r.json();
+                return r.text();
             })
-            .then(function (data) {
-                var arr = data; // emote.json = مصفوفة JSON نقية من الرسائل فقط
-                stickersList = Array.isArray(arr) ? arr.join('\n') : '';
+            .then(function (raw) {
+                var list = parseStickersText(raw);
+                if (!list) throw new Error('empty');
+                stickersList = list;
                 stickersListLoaded = true;
                 return stickersList;
             })
@@ -5456,7 +5469,6 @@ async function init() {
     prewarmProxies().catch(function(){});
     registerServiceWorker();
     SetupPersistence();
-    resumeRunningBots();
 
     // ✅ نعرض دائماً الشاشة الرئيسية (حتى لو لا توجد بوتات) بدلاً من شاشة الإضافة
     renderBotList();
@@ -5684,43 +5696,6 @@ function clearRunningState() {
     try { localStorage.removeItem(RUNNING_KEY); } catch(e) {}
 }
 
-// استئناف البوتات التي كانت تعمل قبل إغلاق الصفحة
-function resumeRunningBots() {
-    try {
-        var raw = localStorage.getItem(RUNNING_KEY);
-        if (!raw) return;
-        var data = JSON.parse(raw);
-        if (!data || !data.running) return;
-        // لا نستئنف تلقائياً إذا مر وقت طويل (> 10 دقائق) — قد تكون الرسائل قديمة
-        var elapsed = Date.now() - (data.timestamp || 0);
-        if (elapsed > 10 * 60 * 1000) {
-            clearRunningState();
-            return;
-        }
-        // استئناف كل بوت كان يعمل
-        for (var i = 0; i < data.running.length; i++) {
-            var r = data.running[i];
-            var b = findBot(r.id);
-            if (b && !b.isSending) {
-                // استعادة العداد
-                if (r.sent) b.sent = r.sent;
-                // إعادة تشغيل البوت
-                setTimeout(function(bot) {
-                    // التحقق من وجود قناة صالحة
-                    var hasValid = false;
-                    for (var c = 0; c < bot.channels.length; c++) {
-                        if (bot.channels[c].messages && bot.channels[c].messages.trim()) {
-                            hasValid = true; break;
-                        }
-                    }
-                    if (hasValid) startBotLoop(bot);
-                }, 100 + i * 200, b);
-            }
-        }
-        setTimeout(function() { clearRunningState(); }, 5000);
-    } catch(e) {}
-}
-
 // ═══════════════════════════════════════
 //  إعداد الاستمرارية
 // ═══════════════════════════════════════
@@ -5873,7 +5848,7 @@ document.addEventListener('DOMContentLoaded',async()=>{await kickHandleCallback(
 
 <script>
 (function () {
-    var SECRET_PASSWORD = "01131711082#Nada";
+    var SECRET_PASSWORD = "000";
     var UNLOCKED = false;
 
     function ask() {
