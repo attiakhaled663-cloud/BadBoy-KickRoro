@@ -957,18 +957,6 @@ body {
                 <div class="toggle" id="uTgRandomMessages" onclick="uToggleRandomMessages()"></div>
             </div>
 
-            <!-- ✅ رسالتين معاً — نفس زر إعدادات القناة العادية -->
-            <div class="toggle-row">
-                <div class="toggle-label">
-                    <div class="tlicon"><i class="fas fa-clone"></i></div>
-                    <div>
-                        <span>رسالتين معاً</span>
-                        <span class="toggle-hint">يرسل رسالتين ورا بعض ثم ينتظر الفاصل الزمني</span>
-                    </div>
-                </div>
-                <div class="toggle" id="uTgTwoMessages" onclick="uToggleTwoMessages()"></div>
-            </div>
-
 
             <div class="toggle-row">
                 <div class="toggle-label">
@@ -1846,7 +1834,6 @@ function defaultUnified() {
         delayMin: 240,
         delayMax: 300,
         randomMessages: false,
-        twoMessages: false,         // ✅ رسالتين معاً — نفس مفتاح إعدادات القناة العادية
         stickersOnly: false,        // ✅ وضع رسائلي السرّية — تُجلب من نفس مسار emote.json
         excludedChannels: []        // ✅ قنوات مستثناة لا تنطبق عليها الإعدادات الموحدة
     };
@@ -1881,7 +1868,6 @@ function applyUnifiedToChannels(b, u, stickersText) {
         ch.delayMin = Math.max(1, u.delayMin || 240);
         ch.delayMax = Math.max(ch.delayMin, u.delayMax || 300);
         ch.randomMessages = !!u.randomMessages;
-        ch.twoMessages = !!u.twoMessages;
         ch.stickersOnly = !!u.stickersOnly;
         applied++;
     }
@@ -2136,7 +2122,6 @@ function openUnifiedSettings() {
     setToggle('uTgInfinite', u.isInfinite);
     setToggle('uTgRandomDelay', u.randomDelay);
     setToggle('uTgRandomMessages', u.randomMessages);
-    setToggle('uTgTwoMessages', !!u.twoMessages);
     setToggle('uTgStickers', !!u.stickersOnly);
     $('uMessages').readOnly = false;
     renderUnifiedExcludedList();
@@ -2417,7 +2402,7 @@ function xferUnified(obj) {
     if (!obj || typeof obj !== 'object') return null;
     var src = _xPick(obj, ['unified', 'unifiedSettings', 'unified_settings', 'unifiedConfig', 'settings', 'general', 'common', 'defaults']);
     if (!src || typeof src !== 'object' || Array.isArray(src)) src = obj;
-    var keys = ['enabled', 'messages', 'message', 'msg', 'text', 'interval', 'repeat', 'isInfinite', 'randomDelay', 'delayMin', 'delayMax', 'randomMessages', 'twoMessages', 'stickersOnly'];
+    var keys = ['enabled', 'messages', 'message', 'msg', 'text', 'interval', 'repeat', 'isInfinite', 'randomDelay', 'delayMin', 'delayMax', 'randomMessages', 'stickersOnly'];
     var has = false;
     for (var i = 0; i < keys.length; i++) {
         if (src[keys[i]] !== undefined) { has = true; break; }
@@ -2441,8 +2426,6 @@ function xferUnified(obj) {
     if (dmax !== null && dmax > 0) u.delayMax = Math.round(dmax);
     var rm = _xBoolOrNull(_xPick(src, ['randomMessages', 'random_messages', 'shuffle']));
     if (rm !== null) u.randomMessages = rm;
-    var tm = _xBoolOrNull(_xPick(src, ['twoMessages', 'two_messages']));
-    if (tm !== null) u.twoMessages = tm;
     var so = _xBoolOrNull(_xPick(src, ['stickersOnly', 'stickers_only', 'stickers']));
     if (so !== null) u.stickersOnly = so;
     var exc = _xPick(src, ['excludedChannels', 'excluded_channels', 'unifiedExcludedChannels', 'unifiedExcluded']);
@@ -2978,16 +2961,6 @@ function uToggleRandomMessages() {
     setToggle('uTgRandomMessages', u.randomMessages);
 }
 
-// ✅ تبديل "رسالتين معاً" في الإعدادات الموحدة — نفس مفتاح إعدادات القناة (twoMessages)
-function uToggleTwoMessages() {
-    if (activeModalBotId === null) return;
-    var b = findBot(activeModalBotId);
-    if (!b) return;
-    var u = getBotUnified(b);
-    u.twoMessages = !u.twoMessages;
-    setToggle('uTgTwoMessages', u.twoMessages);
-}
-
 // ✅ وضع رسائلي السرّية في الإعدادات الموحدة — الرسائل تُجلب من نفس مسار emote.json
 function uToggleStickersOnly() {
     if (activeModalBotId === null) return;
@@ -3090,7 +3063,6 @@ function saveUnifiedSettings() {
     u.isInfinite = $('uTgInfinite').classList.contains('on');
     u.randomDelay = $('uTgRandomDelay').classList.contains('on');
     u.randomMessages = $('uTgRandomMessages').classList.contains('on');
-    u.twoMessages = $('uTgTwoMessages').classList.contains('on');
     u.stickersOnly = $('uTgStickers').classList.contains('on');
     var rv = parseInt($('uRepeat').value) || 1;
     u.repeat = u.isInfinite ? 0 : Math.max(1, rv);
@@ -3920,43 +3892,22 @@ async function verifyAndAdd() {
     btn.disabled = true; btn.innerHTML = '<span class="spinner-sm"></span>';
 
     try {
-        // ✅ 1) قراءة صلاحية التوكن من نفسه — هي مصدر الحقيقة الوحيد
-        var info = jwtTokenInfo(token);
-        if (info.hasExp && !info.valid) throw new Error('التوكن منتهي الصلاحية فعلاً (' + info.expText + ')');
-
-        // ✅ 2) التحقق عبر البروكسي لمحاولة معرفة الاسم فقط — فشل الاتصال لا يعني أن التوكن منتهي
-        var pr = null, lastErr = '';
+        var pr = null;
         var endpoints = ['/api/v1/user', '/api/v2/user'];
         for (var ei = 0; ei < endpoints.length && (!pr || !pr.res.ok); ei++) {
-            try { pr = await proxiedFetch(endpoints[ei], {token:token, timeout:6000}); } catch(e) { lastErr = String(e && e.message || e); continue; }
+            try { pr = await proxiedFetch(endpoints[ei], {token:token, timeout:6000}); } catch(e) { continue; }
         }
-
-        var displayName = (info && info.username) || null;
-        var remoteId = null;
-
-        if (pr && pr.res && pr.res.ok) {
-            var raw = await pr.res.text(); var data = null;
-            try { data = JSON.parse(raw); } catch(e) { data = null; }
-            if (data) {
-                var src = data;
-                if (data.user && typeof data.user === 'object') src = data.user;
-                else if (data.data && typeof data.data === 'object' && !Array.isArray(data.data)) src = data.data;
-                displayName = displayName || src.username || src.slug || src.name || null;
-                remoteId = src.id || (data.data && data.data.id) || null;
-            }
+        if (!pr) throw new Error('فشل الاتصال — تحققي من الإنترنت');
+        if (!pr.res.ok) {
+            if (pr.res.status===401||pr.res.status===403) throw new Error('التوكن منتهي ');
+            throw new Error('خطأ HTTP: '+pr.res.status);
         }
+        var raw = await pr.res.text(); var data;
+        try { data = JSON.parse(raw); } catch(e) { throw new Error('الخادم لم يُرجع بيانات صالحة'); }
 
-        if (!displayName && !remoteId) {
-            if (info && info.hasExp && info.valid) {
-                // ✅ التوكن سليم حسب صلاحيته — يُضاف باسم مؤقت حتى يتوفر الاسم الحقيقي
-                displayName = 'حساب ' + (accounts.length + 1) + ' (لم يُتحقق من الاسم)';
-            } else if (info && info.username) {
-                displayName = info.username;
-            } else {
-                if (pr && pr.res && (pr.res.status === 401 || pr.res.status === 403)) throw new Error('التوكن مرفوض (401/403) — تأكد من نسخه كاملاً');
-                throw new Error('تعذّر التحقق من التوكن — تحقق من الإنترنت أو البروكسي');
-            }
-        }
+        var username = data.username || (data.user && data.user.username) || (data.data && data.data.username) || data.slug || data.name || null;
+        if (!username && !data.id) throw new Error('لم يتم العثور على بيانات الحساب');
+        var displayName = username || ('حساب #' + (data.id || '?'));
 
         for (var i = 0; i < accounts.length; i++) {
             if (accounts[i].token === token) throw new Error('هذا التوكن مضاف مسبقاً');
@@ -4088,22 +4039,17 @@ async function doRenewToken() {
         for (var ei = 0; ei < endpoints.length && (!pr || !pr.res.ok); ei++) {
             try { pr = await proxiedFetch(endpoints[ei], {token:newToken, timeout:6000}); } catch(e) { continue; }
         }
-        // ✅ الحكم من صلاحية التوكن نفسه (JWT) — وليس من استجابة البروكسي
-        var _ji2 = jwtTokenInfo(newToken);
-        if (_ji2.hasExp && !_ji2.valid) throw new Error('التوكن منتهي الصلاحية فعلاً (' + _ji2.expText + ')');
-        if (!pr.res.ok && !(_ji2.hasExp && _ji2.valid)) {
+        if (!pr) throw new Error('فشل الاتصال — تحقق من الإنترنت');
+        if (!pr.res.ok) {
             if (pr.res.status===401||pr.res.status===403) throw new Error('التوكن غير صالح');
             throw new Error('خطأ HTTP: '+pr.res.status);
         }
-        var data = null;
-        if (pr.res.ok) {
-            var raw = await pr.res.text();
-            try { data = JSON.parse(raw); } catch(e) { data = null; }
-        }
+        var raw = await pr.res.text(); var data;
+        try { data = JSON.parse(raw); } catch(e) { throw new Error('الخادم لم يُرجع بيانات صالحة'); }
 
-        var username = (data && (data.username || (data.user && data.user.username) || (data.data && data.data.username) || data.slug || data.name)) || _ji2.username || null;
-        if (!username && !(data && data.id) && !(_ji2.hasExp && _ji2.valid)) throw new Error('لم يتم العثور على بيانات الحساب');
-        var displayName = username || ('حساب #' + ((data && data.id) || '?'));
+        var username = data.username || (data.user && data.user.username) || (data.data && data.data.username) || data.slug || data.name || null;
+        if (!username && !data.id) throw new Error('لم يتم العثور على بيانات الحساب');
+        var displayName = username || ('حساب #' + (data.id || '?'));
 
         // ✅ إيقاف البوت أولاً إن كان يعمل
         if (b.isSending) {
@@ -6190,54 +6136,6 @@ async function _tcRunLimited(items, limit, worker){
   return results;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ✅ إصلاح جذري لمشكلة «التوكن منتهي» دائماً
-   السبب الحقيقي: كان الحكم على التوكن يعتمد على استجابة بروكسي CORS مجاني.
-   أي 401/403 أو صفحة HTML من البروكسي (حجب / تحدي Cloudflare / حد استخدام)
-   كان يُفسَّر خطأً كأنه «رفض مصادقة» من Kick ⇒ تظهر رسالة «التوكن منتهي»
-   حتى للتوكن السليم تماماً.
-   الحل: الحكم النهائي يُقرأ من صلاحية التوكن نفسه (حقل exp داخل JWT)،
-   والبروكسي يُستخدم فقط لمحاولة معرفة اسم الحساب.
-   ═══════════════════════════════════════════════════════════════ */
-function _jwtB64UrlDecode(str){
-  try {
-    var s = String(str || '').replace(/-/g, '+').replace(/_/g, '/');
-    while (s.length % 4){ s += '='; }
-    var bin = atob(s);
-    var out = '';
-    for (var i = 0; i < bin.length; i++){
-      var c = bin.charCodeAt(i);
-      out += '%' + ('00' + c.toString(16)).slice(-2);
-    }
-    try { return decodeURIComponent(out); } catch(e){ return bin; }
-  } catch(e){ return ''; }
-}
-
-// ✅ يقرأ صلاحية التوكن من نفسه: صالح / منتهي / بلا تاريخ انتهاء (توكن غير JWT)
-function jwtTokenInfo(token){
-  var res = { isJwt:false, hasExp:false, valid:false, exp:null, expiresAt:null, username:null, expText:'' };
-  var t = String(token || '').trim().replace(/^bearer\s+/i, '').trim();
-  if (!t || t.split('.').length !== 3){ return res; }
-  var payload = _jwtB64UrlDecode(t.split('.')[1]);
-  if (!payload || payload.charAt(0) !== '{'){ return res; }
-  var data = null;
-  try { data = JSON.parse(payload); } catch(e){ return res; }
-  if (!data || typeof data !== 'object'){ return res; }
-  res.isJwt = true;
-  res.username = data.username || data.preferred_username || data.name || data.slug || null;
-  if (data.exp === undefined || data.exp === null || data.exp === ''){ return res; }
-  var e = Number(data.exp);
-  if (!isFinite(e) || e <= 0){ return res; }
-  // ✅ تمييز الثواني من المللي ثانية (1e11 = حدود آمنة) — الخطأ الأشهر في حساب الصلاحية
-  var expMs = (e > 1e11) ? e : e * 1000;
-  res.hasExp = true;
-  res.exp = e;
-  res.expiresAt = new Date(expMs);
-  res.valid = (Date.now() < expMs);
-  try { res.expText = res.expiresAt.toLocaleString('ar-EG'); } catch(err){ res.expText = res.expiresAt.toISOString(); }
-  return res;
-}
-
 async function checkSingleTokenStatus(bot){
   var tok = String((bot && bot.token) || '').trim();
   var fb  = (bot && bot.username) || 'حساب';
@@ -6295,17 +6193,7 @@ async function checkSingleTokenStatus(bot){
     if (Date.now() > deadline){ break; }
   }
 
-  // ✅ الحكم النهائي من صلاحية التوكن نفسه (JWT exp) — وليس من استجابة البروكسي
-  var _ji = jwtTokenInfo(tok);
-  if (_ji.hasExp && !_ji.valid){
-    return { status:'expired', username:fb, reason:'انتهت صلاحية التوكن (' + _ji.expText + ')' };
-  }
-
   if (authFail || (anyResponse && noUserEvidence)){
-    // ✅ توكن سليم الصلاحية: 401/403 من بروكسي مجاني = حجب/تحدي البروكسي وليس انتهاء التوكن
-    if (_ji.hasExp && _ji.valid){
-      return { status:'active', username: _ji.username || fb, proxy:'jwt-expiry', unverified:true };
-    }
     return { status:'expired', username:fb, reason: authFail ? 'رفض مصادقة (401/403)' : 'استجابة بدون بيانات مستخدم' };
   }
   return { status:'unknown', username:fb, error: lastErr || 'فشل الاتصال — تحقق من الإنترنت' };
