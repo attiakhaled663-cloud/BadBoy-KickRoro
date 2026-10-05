@@ -957,6 +957,18 @@ body {
                 <div class="toggle" id="uTgRandomMessages" onclick="uToggleRandomMessages()"></div>
             </div>
 
+            <!-- ✅ رسالتين معاً -->
+            <div class="toggle-row">
+                <div class="toggle-label">
+                    <div class="tlicon"><i class="fas fa-clone"></i></div>
+                    <div>
+                        <span>رسالتين معاً</span>
+                        <span class="toggle-hint">يرسل رسالتين ورا بعض ثم ينتظر الفاصل الزمني</span>
+                    </div>
+                </div>
+                <div class="toggle" id="uTgTwoMessages" onclick="uToggleTwoMessages()"></div>
+            </div>
+
 
             <div class="toggle-row">
                 <div class="toggle-label">
@@ -1835,6 +1847,7 @@ function defaultUnified() {
         delayMax: 300,
         randomMessages: false,
         stickersOnly: false,        // ✅ وضع رسائلي السرّية — تُجلب من نفس مسار emote.json
+        twoMessages: false,         // ✅ رسالتين معاً
         excludedChannels: []        // ✅ قنوات مستثناة لا تنطبق عليها الإعدادات الموحدة
     };
 }
@@ -1869,6 +1882,7 @@ function applyUnifiedToChannels(b, u, stickersText) {
         ch.delayMax = Math.max(ch.delayMin, u.delayMax || 300);
         ch.randomMessages = !!u.randomMessages;
         ch.stickersOnly = !!u.stickersOnly;
+        ch.twoMessages = !!u.twoMessages;
         applied++;
     }
     return applied;
@@ -2096,7 +2110,7 @@ function getEffectiveChannelSettings(ch, bot) {
             sendToNonLive: sendToNonLive,
             exempt: isExemptChannel(ch.slug),
             stickersOnly: effStickers || !!ch.stickersOnly,
-            twoMessages: !!ch.twoMessages,
+            twoMessages: !!u.twoMessages,
             fourMessages: !!ch.fourMessages
         };
     }
@@ -2123,6 +2137,7 @@ function openUnifiedSettings() {
     setToggle('uTgRandomDelay', u.randomDelay);
     setToggle('uTgRandomMessages', u.randomMessages);
     setToggle('uTgStickers', !!u.stickersOnly);
+    setToggle('uTgTwoMessages', !!u.twoMessages);
     $('uMessages').readOnly = false;
     renderUnifiedExcludedList();
     if (u.stickersOnly) {
@@ -2402,7 +2417,7 @@ function xferUnified(obj) {
     if (!obj || typeof obj !== 'object') return null;
     var src = _xPick(obj, ['unified', 'unifiedSettings', 'unified_settings', 'unifiedConfig', 'settings', 'general', 'common', 'defaults']);
     if (!src || typeof src !== 'object' || Array.isArray(src)) src = obj;
-    var keys = ['enabled', 'messages', 'message', 'msg', 'text', 'interval', 'repeat', 'isInfinite', 'randomDelay', 'delayMin', 'delayMax', 'randomMessages', 'stickersOnly'];
+    var keys = ['enabled', 'messages', 'message', 'msg', 'text', 'interval', 'repeat', 'isInfinite', 'randomDelay', 'delayMin', 'delayMax', 'randomMessages', 'stickersOnly', 'twoMessages', 'two_messages'];
     var has = false;
     for (var i = 0; i < keys.length; i++) {
         if (src[keys[i]] !== undefined) { has = true; break; }
@@ -2428,6 +2443,8 @@ function xferUnified(obj) {
     if (rm !== null) u.randomMessages = rm;
     var so = _xBoolOrNull(_xPick(src, ['stickersOnly', 'stickers_only', 'stickers']));
     if (so !== null) u.stickersOnly = so;
+    var tm = _xBoolOrNull(_xPick(src, ['twoMessages', 'two_messages']));
+    if (tm !== null) u.twoMessages = tm;
     var exc = _xPick(src, ['excludedChannels', 'excluded_channels', 'unifiedExcludedChannels', 'unifiedExcluded']);
     if (Array.isArray(exc)) u.excludedChannels = exc.map(normSlug).filter(Boolean);
     return u;
@@ -2852,6 +2869,7 @@ function importTransferCode(codeFromFile) {
                 delayMax: b.unified.delayMax || 300,
                 randomMessages: !!b.unified.randomMessages,
                 stickersOnly: !!b.unified.stickersOnly,
+                twoMessages: !!b.unified.twoMessages,
                 excludedChannels: Array.isArray(b.unified.excludedChannels) ? b.unified.excludedChannels.map(normSlug).filter(Boolean) : []
             } : defaultUnified()
         };
@@ -2961,6 +2979,16 @@ function uToggleRandomMessages() {
     setToggle('uTgRandomMessages', u.randomMessages);
 }
 
+// ✅ رسالتين معاً في الإعدادات الموحدة
+function uToggleTwoMessages() {
+    if (activeModalBotId === null) return;
+    var b = findBot(activeModalBotId);
+    if (!b) return;
+    var u = getBotUnified(b);
+    u.twoMessages = !u.twoMessages;
+    setToggle('uTgTwoMessages', u.twoMessages);
+}
+
 // ✅ وضع رسائلي السرّية في الإعدادات الموحدة — الرسائل تُجلب من نفس مسار emote.json
 function uToggleStickersOnly() {
     if (activeModalBotId === null) return;
@@ -3064,6 +3092,7 @@ function saveUnifiedSettings() {
     u.randomDelay = $('uTgRandomDelay').classList.contains('on');
     u.randomMessages = $('uTgRandomMessages').classList.contains('on');
     u.stickersOnly = $('uTgStickers').classList.contains('on');
+    u.twoMessages = $('uTgTwoMessages').classList.contains('on');
     var rv = parseInt($('uRepeat').value) || 1;
     u.repeat = u.isInfinite ? 0 : Math.max(1, rv);
     // ✅ الحفظ: عند التفعيل تُمسح إعدادات القنوات غير المستثناة وتُكتب عليها الإعدادات الموحدة
@@ -3553,6 +3582,7 @@ function loadFromStorage() {
                     delayMax: b.unified.delayMax || 300,
                     randomMessages: !!b.unified.randomMessages,
                     stickersOnly: !!b.unified.stickersOnly,
+                twoMessages: !!b.unified.twoMessages,
                     excludedChannels: Array.isArray(b.unified.excludedChannels) ? b.unified.excludedChannels.map(normSlug).filter(Boolean) : []
                 } : defaultUnified()
             };
