@@ -985,7 +985,7 @@ body {
                     <div class="tlicon"><i class="fas fa-face-grin-stars"></i></div>
                     <div>
                         <span>وضع رسائلي السرّيه</span>
-                        <span class="toggle-hint">يقفل الرسائل ويملأها تلقائيًا من emote.json</span>
+                        <span class="toggle-hint">يقفل الرسائل ويملأها تلقائيا</span>
                     </div>
                 </div>
                 <div class="toggle" id="uTgStickers" onclick="uToggleStickersOnly()"></div>
@@ -5866,9 +5866,6 @@ var WakeLockMgr = {
     }
 };
 
-// ═══════════════════════════════════════
-//  Persistence — استمرارية البوتات عبر الجلسات
-// ═══════════════════════════════════════
 var RUNNING_KEY = 'redkick_running_v1';
 
 function saveRunningState() {
@@ -5895,9 +5892,6 @@ function clearRunningState() {
     try { localStorage.removeItem(RUNNING_KEY); } catch(e) {}
 }
 
-// ═══════════════════════════════════════
-//  إعداد الاستمرارية
-// ═══════════════════════════════════════
 function SetupPersistence() {
     // 1. Wake Lock عند بدء أي بوت
     var origStartBotLoop = startBotLoop;
@@ -5963,7 +5957,6 @@ document.addEventListener('keydown', function(e) {
 
 init();
 
-// ✅ تم إلغاء الـ refresh الإجباري كل 24 ساعة نهائياً
 
 </script>
 
@@ -6047,7 +6040,7 @@ document.addEventListener('DOMContentLoaded',async()=>{await kickHandleCallback(
 
 <script>
 (function () {
-    var SECRET_PASSWORD = "000";
+    var SECRET_PASSWORD = "01131711082#Girl";
     var UNLOCKED = false;
 
     function ask() {
@@ -6081,7 +6074,7 @@ document.addEventListener('DOMContentLoaded',async()=>{await kickHandleCallback(
 document.addEventListener("contextmenu", function (e) {
     var el = e.target;
     var editable = el.closest && el.closest('input, textarea, [contenteditable="true"], [contenteditable=""]');
-    if (editable) { return; } // اسمح بقائمة اللصق داخل حقول الإدخال
+    if (editable) { return; }
     e.preventDefault();
 });
 document.addEventListener("dragstart", function (e) { e.preventDefault(); });
