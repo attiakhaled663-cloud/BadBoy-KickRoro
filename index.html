@@ -1607,32 +1607,42 @@ async function fetchChatroomId(slug, acc) {
 // ✅ التحقق من حالة البث المباشر للقناة
 // يرجع: true (تبث), false (أوفلاين), null (فشل الفحص)
 async function checkChannelLive(slug, acc) {
+    // ✅ كيك يحوّل (_) إلى (-) في الـ slug — جرّب الصيغتين، ولا تعتبر القناة أوفلاين إلا إذا كل الصيغ الناجحة قالت أوفلاين
+    var variants = [slug];
+    if (slug.indexOf('-') !== -1) variants.push(slug.replace(/-/g, '_'));
+    if (slug.indexOf('_') !== -1) variants.push(slug.replace(/_/g, '-'));
+    var sawOffline = false;
+    for (var vi = 0; vi < variants.length; vi++) {
+        var v = await _checkChannelLiveOne(variants[vi], acc);
+        if (v === true) return true;
+        if (v === false) sawOffline = true;
+    }
+    return sawOffline ? false : null; // null = فشل الفحص (لا يوقف الإرسال)
+}
+
+async function _checkChannelLiveOne(slug, acc) {
     try {
-        var r = await proxiedFetch('/api/v2/channels/'+slug, {skipAuth:true, timeout:8000, preferredProxy:acc.workingProxy, requireOk:true});
+        var r = await proxiedFetch('/api/v2/channels/'+encodeURIComponent(slug)+'?_='+Date.now(), {skipAuth:true, timeout:8000, preferredProxy:acc.workingProxy, requireOk:true});
         if (r.res.ok) {
             var data = await r.res.json().catch(function(){return null;});
             if (data) {
                 var dd = data.data || data;
-                // kick.com v2: قد يحتوي على livestream (كائن أو null)
                 if (dd.livestream) {
                     if (dd.livestream.is_live !== undefined) return !!dd.livestream.is_live;
-                    // إذا livestream موجود وليس null، غالباً تبث
                     return true;
                 }
-                // بعض القنوات تستخدم is_live مباشرة
                 if (dd.is_live !== undefined) return !!dd.is_live;
                 if (dd.live_stream) {
                     if (dd.live_stream.is_live !== undefined) return !!dd.live_stream.is_live;
                     return true;
                 }
-                // livestream = null → أوفلاين
                 if (dd.livestream === null) return false;
-                // إذا لم نجد أي حقل، اعتبرها أونلاين (لعدم تعطيل الإرسال)
-                return true;
+                // لا يوجد أي حقل بث — لا تحكم (null) بدل افتراض أونلاين
+                return null;
             }
         }
     } catch(e) {}
-    return null; // فشل الفحص
+    return null;
 }
 
 // ═══════════════════════════════════════
@@ -2741,7 +2751,8 @@ function exportTransferCodeToFile() {
         return;
     }
     try {
-        var blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+        // ✅ BOM (\ufeff) يخلي كروم يقرأ الملف UTF-8 ويعرض العربية صح
+        var blob = new Blob(['\ufeff' + code], { type: 'text/plain;charset=utf-8' });
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         a.href = url;
@@ -5671,6 +5682,7 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
     var roundNum = 0;
     var sentInRound = 0;
     var lastLiveCheck = 0;
+    var offlineStreak = 0;
     var sig = function() { return abortControllers[bot.id] ? abortControllers[bot.id].signal : undefined; };
 
     // ✅ فحص البث المباشر — يرجع true (تبث), false (أوفلاين), true (فشل الفحص - لا يوقف)
@@ -5690,6 +5702,13 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
         if (live === null) {
             // فشل الفحص — احتفظ بالحالة السابقة (لا يوقف الإرسال)
             return ch.isLive !== false;
+        }
+        // ✅ لا توقف الإرسال من أول ردّ "أوفلاين" — البروكسيات أحياناً ترجّع نسخة قديمة مخزّنة
+        // اشترط 3 ردود أوفلاين متتالية قبل الإيقاف
+        if (live === true) { offlineStreak = 0; }
+        else if (ch.isLive === true) {
+            offlineStreak++;
+            if (offlineStreak < 3) return true;
         }
         var wasLive = ch.isLive;
         ch.isLive = live;
