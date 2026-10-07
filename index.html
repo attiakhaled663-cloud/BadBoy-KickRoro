@@ -1322,6 +1322,15 @@ body {
             <div class="toggle" id="tgStickersOnly" onclick="cToggleStickersOnly()"></div>
         </div>
 
+        <!-- ✅ تعليقات للاستريمر تمساح — نفس زر الإعدادات الموحدة -->
+        <div class="toggle-row">
+            <div class="toggle-label">
+                <div class="tlicon"><i class="fas fa-comment"></i></div>
+                <div><span>تعليقات للاستريمر تمساح</span></div>
+            </div>
+            <div class="toggle" id="tgStreamerComments" onclick="cToggleStreamerComments()"></div>
+        </div>
+
         <div class="modal-actions">
             <button class="btn btn-fire" onclick="saveChannelSettings()"><i class="fas fa-check"></i> حفظ</button>
             <button class="btn btn-ghost" onclick="closeChannelSettings()"><i class="fas fa-xmark"></i> إلغاء</button>
@@ -1837,6 +1846,7 @@ function makeChannel(slug) {
         twoMessages: false,     // ✅ رسالتين معاً
         fourMessages: false,   // ✅ أربعة رسائل معاً
         stickersOnly: false,    // ✅ رسائل
+        streamerComments: false, // ✅ تعليقات للاستريمر تمساح
         // حالة التشغيل (لا تُحفظ)
         status: 'idle',         // idle | connecting | on | off | sending | failed
         sent: 0,
@@ -1901,6 +1911,8 @@ function applyUnifiedToChannels(b, u, stickersText) {
         ch.delayMax = Math.max(ch.delayMin, u.delayMax || 300);
         ch.randomMessages = !!u.randomMessages;
         ch.stickersOnly = !!u.stickersOnly;
+        ch.streamerComments = !!u.streamerComments;
+        if (u.streamerComments) ch.messages = TAMSAH_STREAMER_COMMENTS.join('\n');
         ch.twoMessages = !!u.twoMessages;
         applied++;
     }
@@ -2400,7 +2412,8 @@ function xferChannelFrom(it, fallbackSlug) {
         verified: _xBoolOrNull(_xPick(src, ['verified', 'isVerified', 'is_verified'])),
         twoMessages: _xBoolOrNull(_xPick(src, ['twoMessages', 'two_messages'])),
         fourMessages: _xBoolOrNull(_xPick(src, ['fourMessages', 'four_messages'])),
-        stickersOnly: _xBoolOrNull(_xPick(src, ['stickersOnly', 'stickers_only', 'stickers']))
+        stickersOnly: _xBoolOrNull(_xPick(src, ['stickersOnly', 'stickers_only', 'stickers'])),
+        streamerComments: _xBoolOrNull(_xPick(src, ['streamerComments', 'streamer_comments', 'tamsahComments']))
     };
 }
 
@@ -2641,6 +2654,7 @@ function xferFinalChannel(ch, g, guard, gBase) {
         twoMessages: !!pick(ch.twoMessages, pick(g.twoMessages, false)),
         fourMessages: !!pick(ch.fourMessages, pick(g.fourMessages, false)),
         stickersOnly: !!pick(ch.stickersOnly, pick(g.stickersOnly, false)),
+        streamerComments: !!pick(ch.streamerComments, pick(g.streamerComments, false)),
         status: 'idle', sent: 0, error: '', retries: 0
     };
 }
@@ -2688,7 +2702,8 @@ function generateTransferCode() {
                             verified: !!ch.verified,
                             twoMessages: !!ch.twoMessages,
                             fourMessages: !!ch.fourMessages,
-                            stickersOnly: !!ch.stickersOnly
+                            stickersOnly: !!ch.stickersOnly,
+                            streamerComments: !!ch.streamerComments
                         };
                     }),
                     workingProxy: b.workingProxy != null ? b.workingProxy : -1,
@@ -3876,7 +3891,8 @@ function persist() {
                             verified: !!ch.verified,
                             twoMessages: !!ch.twoMessages,
                             fourMessages: !!ch.fourMessages,
-                            stickersOnly: !!ch.stickersOnly
+                            stickersOnly: !!ch.stickersOnly,
+                            streamerComments: !!ch.streamerComments
                         };
                     }),
                     autoRecover: b.autoRecover,
@@ -3924,6 +3940,7 @@ function loadFromStorage() {
                         twoMessages: !!ch.twoMessages,
                         fourMessages: !!ch.fourMessages,
                         stickersOnly: !!ch.stickersOnly,
+                        streamerComments: !!ch.streamerComments,
                         status: 'idle', sent: 0, error: '', retries: 0
                     });
                 }
@@ -5121,8 +5138,13 @@ function openChannelSettings(slug) {
     setToggle('tgTwoMessages', !!ch.twoMessages);
     setToggle('tgFourMessages', !!ch.fourMessages);
     setToggle('tgStickersOnly', !!ch.stickersOnly);
+    setToggle('tgStreamerComments', !!ch.streamerComments);
 
-    if (ch.stickersOnly) {
+    if (ch.streamerComments) {
+        // ✅ تعليقات تمساح لها الأولوية على باقي الأوضاع
+        $('cMessages').value = TAMSAH_STREAMER_COMMENTS.join('\n');
+        $('cMessages').readOnly = true;
+    } else if (ch.stickersOnly) {
         ensureStickersList().then(function (list) {
             $('cMessages').value = list;
             $('cMessages').readOnly = true;
@@ -5209,6 +5231,29 @@ function cToggleFourMessages() {
     persist();
 }
 
+// ✅ تبديل "تعليقات للاستريمر تمساح" في إعدادات القناة العادية — بدون كلمة سر
+function cToggleStreamerComments() {
+    if (activeModalBotId === null || !activeChannelSlug) return;
+    var b = findBot(activeModalBotId);
+    var ch = findChannel(b, activeChannelSlug);
+    if (!ch) return;
+    ch.streamerComments = !ch.streamerComments;
+    setToggle('tgStreamerComments', ch.streamerComments);
+    if (ch.streamerComments) {
+        ch.messages = TAMSAH_STREAMER_COMMENTS.join('\n');
+        $('cMessages').value = ch.messages;
+        $('cMessages').readOnly = true;
+    } else if (ch.stickersOnly) {
+        ensureStickersList().then(function (list) {
+            if (list) $('cMessages').value = list;
+            $('cMessages').readOnly = true;
+        });
+    } else {
+        $('cMessages').readOnly = false;
+    }
+    persist();
+}
+
 function cToggleStickersOnly() {
     if (activeModalBotId === null || !activeChannelSlug) return;
     var b = findBot(activeModalBotId);
@@ -5216,6 +5261,7 @@ function cToggleStickersOnly() {
     if (!ch) return;
     ch.stickersOnly = !ch.stickersOnly;
     setToggle('tgStickersOnly', ch.stickersOnly);
+    if (ch.streamerComments) { persist(); return; } // تعليقات تمساح مفعّلة — تبقى الرسائل كما هي
     if (ch.stickersOnly) {
         ensureStickersList().then(function (list) {
             $('cMessages').value = list;
@@ -5248,6 +5294,8 @@ function saveChannelSettings() {
     ch.twoMessages = $('tgTwoMessages').classList.contains('on');
     ch.fourMessages = $('tgFourMessages').classList.contains('on');
     ch.stickersOnly = $('tgStickersOnly').classList.contains('on');
+    ch.streamerComments = $('tgStreamerComments').classList.contains('on');
+    if (ch.streamerComments) ch.messages = TAMSAH_STREAMER_COMMENTS.join('\n');
     var rv = parseInt($('cRepeat').value) || 1;
     ch.repeat = ch.isInfinite ? 0 : Math.max(1, rv);
     persist();
