@@ -4755,58 +4755,163 @@ function mToggle(toggleId, fieldName) {
     persist();
 }
 
+// ═══════════════════════════════════════
+//  ✅ كاش الـ chatroom (كان ناقص التعريف وبيعمل ReferenceError وبيمنع الإضافة)
+// ═══════════════════════════════════════
+if (typeof window._chatroomCache === 'undefined') window._chatroomCache = {};
+
+// ═══════════════════════════════════════
+//  ✅ التحقق من اسم القناة عبر Kick API الرسمي (Client ID / Secret الموجودين في الملف)
+//  - بيرجّع الـ slug الصحيح زي ما هو مكتوب عند كيك (حرف/شرطة/underscore مختلف)
+// ═══════════════════════════════════════
+var _kickAppToken = null, _kickAppTokenExp = 0;
+
+async function kickGetApiToken(forceNew) {
+    // توكن المستخدم لو متسجّل دخول بكيك
+    var ut = null;
+    try { ut = sessionStorage.getItem('kick_access_token'); } catch (e) {}
+    if (ut && !forceNew) return ut;
+    // توكن التطبيق (client_credentials)
+    if (_kickAppToken && Date.now() < _kickAppTokenExp && !forceNew) return _kickAppToken;
+    var body = new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: KICK_CLIENT_ID,
+        client_secret: KICK_CLIENT_SECRET
+    });
+    var r = await fetch('https://id.kick.com/oauth/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body
+    });
+    var d = await r.json().catch(function(){ return {}; });
+    if (!r.ok || !d.access_token) throw new Error('token_failed');
+    _kickAppToken = d.access_token;
+    _kickAppTokenExp = Date.now() + Math.max(60, (d.expires_in || 3600) - 120) * 1000;
+    return _kickAppToken;
+}
+
+function _slugLoose(s) { return String(s || '').toLowerCase().replace(/[\s\-_]/g, ''); }
+
+// يرجّع: {ok:true, slug, broadcasterId, isLive} | {ok:false, reason:'not_found'|'error'}
+async function kickVerifyChannelApi(typed) {
+    var variants = [typed];
+    if (typed.indexOf('_') !== -1) variants.push(typed.replace(/_/g, '-'));
+    if (typed.indexOf('-') !== -1) variants.push(typed.replace(/-/g, '_'));
+    var sawError = false;
+
+    for (var vi = 0; vi < variants.length; vi++) {
+        for (var attempt = 0; attempt < 2; attempt++) {
+            try {
+                var token = await kickGetApiToken(attempt === 1);
+                var r = await fetch('https://api.kick.com/public/v1/channels?slug=' + encodeURIComponent(variants[vi]), {
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
+                });
+                if (r.status === 401 && attempt === 0) { _kickAppToken = null; try { sessionStorage.removeItem('kick_access_token'); } catch (e) {} continue; }
+                if (!r.ok && r.status !== 404) { sawError = true; break; }
+                var d = await r.json().catch(function(){ return null; });
+                var list = d && d.data;
+                if (list && !Array.isArray(list)) list = [list];
+                if (list && list.length) {
+                    var pick = null;
+                    for (var i = 0; i < list.length; i++) {
+                        if (_slugLoose(list[i].slug) === _slugLoose(typed)) { pick = list[i]; break; }
+                    }
+                    if (!pick) pick = list[0];
+                    if (pick && pick.slug) {
+                        return {
+                            ok: true,
+                            slug: String(pick.slug).trim().toLowerCase(),
+                            broadcasterId: pick.broadcaster_user_id || null,
+                            isLive: !!(pick.stream && pick.stream.is_live)
+                        };
+                    }
+                }
+                break; // رد سليم لكن مفيش قناة بالاسم ده → جرّب الصيغة اللي بعدها
+            } catch (e) {
+                sawError = true;
+                break;
+            }
+        }
+    }
+    return { ok: false, reason: sawError ? 'error' : 'not_found' };
+}
+
+var _addingChannel = false;
+
 async function mAddChannel() {
+    if (_addingChannel) return;
     if (activeModalBotId === null) return;
     var b = findBot(activeModalBotId);
     if (!b) return;
-    // ✅ التحقق من الحد الأقصى للقنوات
     if (b.channels.length >= MAX_CHANNELS_PER_BOT) {
         toast('الحد الأقصى للقنوات هو ' + MAX_CHANNELS_PER_BOT + ' قناة لكل بوت', 'e');
         return;
     }
     var inp = $('mChannelInput');
-    var slug = inp.value.trim().toLowerCase().replace(/^\/+|\/+$/g, '').replace(/\s+/g, '');
-    if (!slug) { toast('أدخل اسم القناة', 'e'); return; }
-    if (findChannel(b, slug)) { toast('القناة مضافة مسبقاً', 'i'); return; }
+    var hint = $('mChannelFilterHint');
+    var typed = inp.value.trim().toLowerCase().replace(/^@+/, '').replace(/^\/+|\/+$/g, '').replace(/\s+/g, '');
+    if (!typed) { toast('أدخل اسم القناة', 'e'); return; }
 
-    // ✅ إضافة مباشرة بدون أي تحقق من الاسم (صح أو غلط)
-    //    رقم الـ chatroom بيتجاب في الخلفية، ولو لسه ماتجابش بيتجاب وقت التشغيل
-    var cached = _chatroomCache[slug.replace(/_/g, '-')] || null;
+    _addingChannel = true;
+    var addBtn = inp.parentNode ? inp.parentNode.querySelector('button') : null;
+    var oldBtnHtml = addBtn ? addBtn.innerHTML : '';
+    if (addBtn) { addBtn.disabled = true; addBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>'; }
 
-    for (var i = 0; i < accounts.length; i++) {
-        var acc = accounts[i];
+    try {
+        // ✅ الاسم الصحيح بيتقرا من الـ API
+        var slug = typed;
+        var apiInfo = null;
+        try { apiInfo = await kickVerifyChannelApi(typed); } catch (e) { apiInfo = { ok: false, reason: 'error' }; }
 
-        // ✅ تحقق من الحد الأقصى لكل حساب
-        if (acc.channels.length >= MAX_CHANNELS_PER_BOT) continue;
+        if (apiInfo.ok) {
+            slug = apiInfo.slug;
+        } else if (apiInfo.reason === 'not_found') {
+            // القناة مش موجودة فعلاً عند كيك — منضيفهاش ونوضّح السبب
+            if (hint) {
+                hint.style.display = '';
+                hint.style.color = 'var(--danger)';
+                hint.textContent = 'القناة "' + typed + '" غير موجودة على Kick — راجع الاسم';
+                setTimeout(function() { if (hint) { hint.style.color = ''; hint.style.display = 'none'; hint.textContent = ''; } }, 4000);
+            }
+            return;
+        }
+        // reason === 'error' (مشكلة شبكة/توكن): نضيف بالاسم المكتوب ومينفعش نوقف المستخدم
 
-        // ✅ لو القناة موجودة عند الحساب ده، تجاهله
-        if (findChannel(acc, slug)) continue;
+        if (findChannel(b, slug)) { toast('القناة مضافة مسبقاً', 'i'); inp.value = ''; return; }
 
-        // ✅ أنشئ القناة بنفس الإعدادات لكل الحسابات — تُضاف مقفولة (غير مفعّلة)
-        var channel = makeChannel(slug);
-        channel.chatroomId = cached;
-        channel.verified = !!cached;
-        channel.enabled = false; // ✅ تُضاف مقفولة — التفعيل يدوي
-        acc.channels.push(channel);
+        var cached = window._chatroomCache[slug.replace(/_/g, '-')] || null;
+
+        for (var i = 0; i < accounts.length; i++) {
+            var acc = accounts[i];
+            if (acc.channels.length >= MAX_CHANNELS_PER_BOT) continue;
+            if (findChannel(acc, slug)) continue;
+            var channel = makeChannel(slug);
+            channel.chatroomId = cached;
+            channel.verified = !!cached || apiInfo.ok;
+            channel.enabled = false; // تُضاف مقفولة — التفعيل يدوي
+            if (apiInfo.ok) { channel.isLive = apiInfo.isLive; channel.broadcasterId = apiInfo.broadcasterId; }
+            acc.channels.push(channel);
+        }
+
+        inp.value = '';
+        persist();
+
+        var activeBot = findBot(activeModalBotId);
+        if (activeBot) {
+            renderChannelsList(activeBot);
+            pollChannelsLiveStatus(activeBot);
+        }
+        renderBotList();
+        toast('تمت إضافة "' + slug + '" إلى "' + b.username + '"', 's');
+
+        if (!cached) { try { prefetchChatroomId(slug, b); } catch (e) {} }
+    } catch (err) {
+        console.error('mAddChannel failed:', err);
+    } finally {
+        _addingChannel = false;
+        if (addBtn) { addBtn.disabled = false; addBtn.innerHTML = oldBtnHtml; }
+        try { inp.focus(); } catch (e) {}
     }
-
-    inp.value = '';
-    inp.focus();
-
-    // ✅ حفظ وإعادة عرض كل شيء
-    persist();
-
-    var activeBot = findBot(activeModalBotId);
-    if (activeBot) {
-        renderChannelsList(activeBot);
-        pollChannelsLiveStatus(activeBot);
-    }
-    renderBotList();
-
-    toast('تمت إضافة "' + slug + '" إلى "' + b.username + '"', 's');
-
-    // ✅ جلب رقم الـ chatroom في الخلفية (لا يعطّل الإضافة ولا يعرض أي خطأ)
-    if (!cached) prefetchChatroomId(slug, b);
 }
 
 // ✅ جلب رقم الـ chatroom بصمت بعد الإضافة — الفشل هنا لا يؤثر على شيء
