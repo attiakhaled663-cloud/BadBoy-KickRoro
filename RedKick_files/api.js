@@ -1,38 +1,13 @@
-/* ═══════════════════════════════════════════════════════════
-   BadBoy Kick — api.js
-   طبقة الشبكة + دالة إرسال الرسائل (مفصولة عن index.html)
-   يُحمَّل هذا الملف داخل index.html عبر:
-   <script src="api.js"></script>
-   ويجب أن يوضع قبل السكربت الرئيسي في الصفحة
-
-   ✅ محدَّث 2026-10-07: 12 بروكسي (6 مجدَّدة + 6 جداد) + وضع direct
-   ─ 9 منها تدعم POST (لإرسال الرسائل) و3 للقراءة GET فقط
-   ─ كل البروكسيات اختُبرت لايف واتُرك الحيّ منها فقط
-   ═══════════════════════════════════════════════════════════ */
-
 var KICK_BASE = 'https://kick.com';
 var $ = function(id) { return document.getElementById(id); };
 
-// ═══════════════════════════════════════
-//  البروكسي — 12 بروكسي + direct
-//  (direct لازم يفضل آخر عنصر في المصفوفة دايماً)
-// ═══════════════════════════════════════
 var PROXIES = [
-    // ── مجدَّدة (كانت في الملف الأصلي) ──
     { name:'corsproxy.io', build:function(u){return 'https://api.corsproxy.io/?url='+encodeURIComponent(u);}, canPost:true },
     { name:'corsfix', build:function(u){return 'https://proxy.corsfix.com/?'+u;}, canPost:true },
     { name:'cors-worker', build:function(u){return 'https://test.cors.workers.dev/?'+u;}, canPost:true },
     { name:'corsproxy.org', build:function(u){return 'https://corsproxy.org/?'+encodeURIComponent(u);}, canPost:true },
     { name:'codetabs', build:function(u){return 'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u);}, canPost:false },
     { name:'allorigins', build:function(u){return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u);}, canPost:false },
-    // ── جداد (مُختبرة/موثقة 2025-2026) ──
-    { name:'corsproxy.io-legacy', build:function(u){return 'https://corsproxy.io/?url='+encodeURIComponent(u);}, canPost:true },
-    { name:'cors.lol', build:function(u){return 'https://api.cors.lol/?url='+encodeURIComponent(u);}, canPost:true },
-    { name:'cors.eu.org', build:function(u){return 'https://cors.eu.org/'+u;}, canPost:true },
-    { name:'cors.x2u.in', build:function(u){return 'https://cors.x2u.in/?url='+encodeURIComponent(u);}, canPost:true },
-    // cors.sh: يدعم POST بقوة — حط مفتاحك المجاني من cors.sh/playground بين علامتي التنصيص تحت (اختياري، من غيره هيتباسل بسرعة)
-    { name:'cors.sh', build:function(u){return 'https://proxy.cors.sh/'+u;}, canPost:true, headers:{ 'x-cors-api-key':'' } },
-    { name:'cors-anywhere', build:function(u){return 'https://cors-anywhere.com/'+u;}, canPost:false },
     { name:'direct', build:function(u){return u;}, canPost:true }
 ];
 
@@ -45,11 +20,12 @@ function detectMode() {
     if (isDirectMode) activeProxy = PROXIES.length - 1;
 }
 
-var _bestProxy = -1;
-var _proxyFailCount = {};
+// ✅ نظام ذكي لتتبع أفضل بروكسي — يتذكّر البروكسي الناجح ويستخدمه أولاً
+var _bestProxy = -1; // البروكسي الأفضل (يُحدّث عند النجاح)
+var _proxyFailCount = {}; // عدّاد فشل كل بروكسي
 
-// رُفع لـ v3 لأن ترتيب البروكسيات اتغيّر — لو فضلنا v2 هتشتغل على اندكس قديم
-var BEST_PROXY_KEY = 'redkick_best_proxy_v3';
+// ✅ مفتاح حفظ البروكسي الأفضل في localStorage (للبقاء بعد إعادة التحميل)
+var BEST_PROXY_KEY = 'redkick_best_proxy_v2';
 
 function loadBestProxy() {
     try {
@@ -63,8 +39,10 @@ function saveBestProxy() {
     } catch(e) {}
 }
 
+// ✅ تسخين البروكسيات عند بدء التشغيل: يجد بروكسي شغال سريعاً ويحدّث _bestProxy
 async function prewarmProxies() {
-    var testSlug = 'kick';
+    // جرّب البروكسي المحفوظ أولاً (إن وُجد)
+    var testSlug = 'kick'; // قناة معروفة موجودة دائماً
     var candidates = [];
     if (_bestProxy >= 0) candidates.push(_bestProxy);
     for (var i = 0; i < PROXIES.length; i++) {
@@ -92,8 +70,11 @@ async function prewarmProxies() {
 
 function getProxyOrder(preferredProxy) {
     var order = [];
+    // ✅ البروكسي المفضّل أولاً (إذا تم تمريره)
     if (preferredProxy !== undefined && preferredProxy >= 0) order.push(preferredProxy);
+    // ✅ البروكسي الأفضل عالمياً (إذا لم يكن مفضّلاً)
     if (_bestProxy >= 0 && order.indexOf(_bestProxy) === -1) order.push(_bestProxy);
+    // ✅ بقية البروكسيات مرتّبة حسب قلّة الفشل
     var remaining = [];
     for (var i = 0; i < PROXIES.length; i++) {
         if (order.indexOf(i) === -1) remaining.push(i);
@@ -109,11 +90,10 @@ async function proxiedFetch(kickPath, options) {
     var method = options.method || 'GET';
     var body = options.body || null;
     var headers = options.headers || {};
-    var timeout = options.timeout || 8000;
+    var timeout = options.timeout || 8000; // ✅ timeout كافٍ للاتصال الموثوق
     var skipAuth = options.skipAuth || false;
     var token = options.token || '';
     var preferredProxy = options.preferredProxy;
-    var requireOk = options.requireOk || false;
     var isPost = (method !== 'GET');
 
     var defHeaders = { 'Accept':'application/json' };
@@ -128,8 +108,8 @@ async function proxiedFetch(kickPath, options) {
 
     var fullUrl = KICK_BASE + kickPath;
     var lastError = null;
-    var lastBad = null; // ✅ آخر ردّ غير ناجح (يُستخدم مع requireOk)
 
+    // ✅ ترتيب ذكي: المفضّل → الأفضل عالمياً → البقية حسب قلّة الفشل
     var order = getProxyOrder(preferredProxy);
 
     for (var pi = 0; pi < order.length; pi++) {
@@ -138,32 +118,23 @@ async function proxiedFetch(kickPath, options) {
         var url = PROXIES[p].build(fullUrl);
         var opts = Object.assign({}, fetchOpts);
         opts.credentials = (isDirectMode && p === PROXIES.length-1) ? 'include' : 'omit';
-        // ✅ دعم هيدرز خاصة بكل بروكسي (مثل x-cors-api-key الخاص بـ cors.sh)
-        if (PROXIES[p].headers) {
-            opts.headers = Object.assign({}, defHeaders, PROXIES[p].headers);
-        }
         try {
             var res = await Promise.race([
                 fetch(url, opts),
                 new Promise(function(_, reject) { setTimeout(function(){ reject(new Error('timeout')); }, timeout); })
             ]);
-            // ✅ requireOk: ردّ 403/429/5xx من البروكسي لا يُعتبر نجاحاً — جرّب بروكسي آخر
-            if (requireOk && !res.ok) {
-                _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
-                lastBad = { res: res, proxyUsed: p };
-                continue;
-            }
+            // ✅ نجاح — سجّل البروكسي كأفضل
             _bestProxy = p;
-            _proxyFailCount[p] = 0;
-            saveBestProxy();
+            _proxyFailCount[p] = 0; // تصفير عدّاد الفشل
+            saveBestProxy(); // ✅ حفظ في localStorage للبقاء بعد إعادة التحميل
             return { res: res, proxyUsed: p };
         } catch(e) {
+            // ✅ فشل — زِد عدّاد الفشل
             _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
             lastError = e;
             continue;
         }
     }
-    if (lastBad) return lastBad;
     throw lastError || new Error('فشل الاتصال — تحقق من الإنترنت');
 }
 
@@ -190,13 +161,18 @@ async function refreshXsrf() { xsrfToken=''; await fetchXsrf(); }
 //  إرسال رسالة
 // ═══════════════════════════════════════
 async function sendMessage(chatroomId, content, token, preferredProxy) {
+    // ✅ الإصلاح: جرّب كل البروكسيات على كل الـ endpoints قبل إعلان أي فشل
+    // المشكلة القديمة: البروكسي نفسه يردّ 403/429 والكود يفهمها كخطأ من كيك
+    // (لا صلاحية / حظر) فيوقف الإرسال غلط — رغم إن الرسالة ممكن تبعت عادي
+    // ببروكسي تاني. دلوقتي: الحالة (403/401/429) تتعدّ خطأ حقيقي فقط
+    // لو بروكسيين مختلفين على الأقل ردّوا بنفس الحالة.
     var endpoints = [
         { path:'/api/v2/messages/send/'+chatroomId, body:{content:content, type:'message'} },
         { path:'/api/v1/chat-messages', body:{content:content, chatroom_id:parseInt(chatroomId)} }
     ];
     var order = getProxyOrder(preferredProxy);
     var lastErr = null;
-    var statusCounts = {};
+    var statusCounts = {}; // عدّاد حالات 401/403/429 عبر البروكسيات المختلفة
 
     for (var ei = 0; ei < endpoints.length; ei++) {
         var ep = endpoints[ei];
@@ -210,7 +186,8 @@ async function sendMessage(chatroomId, content, token, preferredProxy) {
                 });
                 if (r.res.ok) { return { success:true, proxyUsed:r.proxyUsed }; }
                 var st = r.res.status;
-                if (st === 419) { await refreshXsrf(); continue; }
+                if (st === 419) { await refreshXsrf(); continue; } // إعادة تحديث CSRF ومحاولة بروكسي آخر
+                // سجّل الحالة وجرّب بروكسي تاني — الردود دي ممكن تكون من البروكسي نفسه مش من كيك
                 if (st === 401 || st === 403 || st === 429) {
                     statusCounts[st] = (statusCounts[st] || 0) + 1;
                 }
@@ -221,6 +198,7 @@ async function sendMessage(chatroomId, content, token, preferredProxy) {
         }
     }
 
+    // ✅ خطأ حقيقي من كيك فقط لو أكد بروكسيان مختلفان على الأقل نفس الحالة
     if (statusCounts[429] >= 2) throw new Error('حظر مؤقت');
     if (statusCounts[403] >= 2) throw new Error('لا صلاحية');
     if (statusCounts[401] >= 2) throw new Error('توكن منتهي');
