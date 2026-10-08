@@ -4769,98 +4769,68 @@ async function mAddChannel() {
     if (!slug) { toast('أدخل اسم القناة', 'e'); return; }
     if (findChannel(b, slug)) { toast('القناة مضافة مسبقاً', 'i'); return; }
 
-    // ✅ التحقق الشامل من القناة مع 6 محاولات وتأخير تصاعدي
-    var addBtn = inp.nextElementSibling;
-    var oldHtml = addBtn.innerHTML;
-    addBtn.disabled = true;
-    addBtn.innerHTML = '<span class="spinner-sm"></span>';
+    // ✅ إضافة مباشرة بدون أي تحقق من الاسم (صح أو غلط)
+    //    رقم الـ chatroom بيتجاب في الخلفية، ولو لسه ماتجابش بيتجاب وقت التشغيل
+    var cached = _chatroomCache[slug.replace(/_/g, '-')] || null;
 
-    var chatroomId = null;
-    var lastReason = null;
+    for (var i = 0; i < accounts.length; i++) {
+        var acc = accounts[i];
 
-    // ✅ جرّب الاسم زي ما اتكتب، ولو مالقيهوش جرّب تبديل (_) بـ (-) أو العكس
-    var slugVariants = [slug];
-    if (slug.indexOf('_') !== -1) {
-        var vDash = slug.replace(/_/g, '-');
-        if (slugVariants.indexOf(vDash) === -1) slugVariants.push(vDash);
+        // ✅ تحقق من الحد الأقصى لكل حساب
+        if (acc.channels.length >= MAX_CHANNELS_PER_BOT) continue;
+
+        // ✅ لو القناة موجودة عند الحساب ده، تجاهله
+        if (findChannel(acc, slug)) continue;
+
+        // ✅ أنشئ القناة بنفس الإعدادات لكل الحسابات — تُضاف مقفولة (غير مفعّلة)
+        var channel = makeChannel(slug);
+        channel.chatroomId = cached;
+        channel.verified = !!cached;
+        channel.enabled = false; // ✅ تُضاف مقفولة — التفعيل يدوي
+        acc.channels.push(channel);
     }
-    if (slug.indexOf('-') !== -1) {
-        var vUnd = slug.replace(/-/g, '_');
-        if (slugVariants.indexOf(vUnd) === -1) slugVariants.push(vUnd);
-    }
 
-    var delays = [2000, 3000, 5000, 8000, 12000];
-    for (var vi = 0; vi < slugVariants.length && !chatroomId; vi++) {
-        var trySlug = slugVariants[vi];
-        for (var attempt = 1; attempt <= 6 && !chatroomId; attempt++) {
-            var result = await verifyChannelComprehensive(trySlug, b);
-            if (result.ok) {
-                chatroomId = result.chatroomId;
-                slug = trySlug; // ✅ خزّن الصيغة اللي السيرفر قبلها فعلاً
-            } else {
-                lastReason = result.reason;
-                if (lastReason === 'not_found') break;
-                if (attempt < 6) {
-                    await new Promise(function(r){ setTimeout(r, delays[attempt-1] || 12000); });
+    inp.value = '';
+    inp.focus();
+
+    // ✅ حفظ وإعادة عرض كل شيء
+    persist();
+
+    var activeBot = findBot(activeModalBotId);
+    if (activeBot) {
+        renderChannelsList(activeBot);
+        pollChannelsLiveStatus(activeBot);
+    }
+    renderBotList();
+
+    toast('تمت إضافة "' + slug + '" إلى "' + b.username + '"', 's');
+
+    // ✅ جلب رقم الـ chatroom في الخلفية (لا يعطّل الإضافة ولا يعرض أي خطأ)
+    if (!cached) prefetchChatroomId(slug, b);
+}
+
+// ✅ جلب رقم الـ chatroom بصمت بعد الإضافة — الفشل هنا لا يؤثر على شيء
+function prefetchChatroomId(slug, bot) {
+    var key = slug.replace(/_/g, '-');
+    var variants = [slug];
+    if (slug.indexOf('_') !== -1) variants.push(slug.replace(/_/g, '-'));
+    else if (slug.indexOf('-') !== -1) variants.push(slug.replace(/-/g, '_'));
+    (async function() {
+        for (var vi = 0; vi < variants.length; vi++) {
+            try {
+                var r = await verifyChannelComprehensive(variants[vi], bot);
+                if (r && r.ok && r.chatroomId) {
+                    _chatroomCache[key] = r.chatroomId;
+                    for (var i = 0; i < accounts.length; i++) {
+                        var c = findChannel(accounts[i], slug);
+                        if (c && !c.chatroomId) { c.chatroomId = r.chatroomId; c.verified = true; }
+                    }
+                    persist();
+                    return;
                 }
-            }
+            } catch (e) {}
         }
-    }
-
-    addBtn.disabled = false;
-    addBtn.innerHTML = oldHtml;
-
-    if (chatroomId) {
-        // ✅ أضف القناة لكل الحسابات دفعة واحدة
-        var addedTo = 0, skipped = 0, failedCount = 0;
-
-        for (var i = 0; i < accounts.length; i++) {
-            var acc = accounts[i];
-
-            // ✅ تحقق من الحد الأقصى لكل حساب
-            if (acc.channels.length >= MAX_CHANNELS_PER_BOT) {
-                failedCount++;
-                continue;
-            }
-
-            // ✅ لو القناة موجودة عند الحساب ده، تجاهله
-            if (findChannel(acc, slug)) {
-                skipped++;
-                continue;
-            }
-
-            // ✅ أنشئ القناة بنفس الإعدادات لكل الحسابات — تُضاف مقفولة (غير مفعّلة)
-            var channel = makeChannel(slug);
-            channel.chatroomId = chatroomId;
-            channel.verified = true;
-            channel.enabled = false; // ✅ تُضاف مقفولة — التفعيل يدوي
-            acc.channels.push(channel);
-            addedTo++;
-        }
-
-        inp.value = '';
-        inp.focus();
-
-        // ✅ حفظ وإعادة عرض كل شيء
-        persist();
-
-        // ✅ لو نافذة الإعدادات مفتوحة، أعد عرض قائمة القنوات للحساب النشط وافحص حالة البث فوراً
-        var activeBot = findBot(activeModalBotId);
-        if (activeBot) {
-            renderChannelsList(activeBot);
-            pollChannelsLiveStatus(activeBot);
-        }
-
-        renderBotList();
-
-        // ✅ رسالة نجاح: اسم القناة + اسم الحساب اللي اتضافت فيه
-        toast('تمت إضافة "' + slug + '" إلى "' + b.username + '"', 's');
-
-    } else if (lastReason === 'not_found') {
-        toast('القناة "' + slug + '" غير موجودة — تحقق من الاسم', 'e');
-    } else {
-        toast('تعذّر التحقق من القناة بعد 6 محاولات — تحقق من الإنترنت وأعد المحاولة', 'e');
-    }
+    })();
 }
 
 function mRemoveChannel(slug) {
@@ -5648,15 +5618,34 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                 continue;
             }
             try {
-                // ✅ استخدم التحقق الشامل أولاً (يجرب كل البروكسيات)
-                var vResult = await verifyChannelComprehensive(slug, bot);
-                if (vResult.ok) {
-                    cid = vResult.chatroomId;
-                } else {
-                    // ✅ ارجع للطريقة القديمة كاحتياط
-                    var chData = await fetchChannel(slug, bot);
-                    cid = extractChatroomId(chData);
-                    if (!cid) cid = await fetchChatroomId(slug, bot);
+                // ✅ كاش مشترك بين الحسابات — قناة واحدة = جلب واحد
+                var ckey = slug.replace(/_/g, '-');
+                cid = _chatroomCache[ckey] || null;
+                if (!cid) {
+                    // ✅ استخدم التحقق الشامل أولاً (يجرب كل البروكسيات)
+                    var vResult = await verifyChannelComprehensive(slug, bot);
+                    if (vResult.ok) {
+                        cid = vResult.chatroomId;
+                    } else if (vResult.reason === 'not_found') {
+                        // ✅ جرّب (_) بدل (-) أو العكس، ولو برضه مش موجودة أوقف القناة دي فقط
+                        var alt = slug.indexOf('_') !== -1 ? slug.replace(/_/g, '-') : (slug.indexOf('-') !== -1 ? slug.replace(/-/g, '_') : null);
+                        if (alt) {
+                            var vAlt = await verifyChannelComprehensive(alt, bot);
+                            if (vAlt.ok) cid = vAlt.chatroomId;
+                        }
+                        if (!cid) {
+                            ch.status = 'off';
+                            ch.error = 'القناة غير موجودة — تحقق من الاسم';
+                            requestUIUpdate();
+                            return;
+                        }
+                    } else {
+                        // ✅ ارجع للطريقة القديمة كاحتياط
+                        var chData = await fetchChannel(slug, bot);
+                        cid = extractChatroomId(chData);
+                        if (!cid) cid = await fetchChatroomId(slug, bot);
+                    }
+                    if (cid) _chatroomCache[ckey] = cid;
                 }
                 // ✅ حفظ chatroom_id للاستخدام المستقبلي
                 if (cid) {
