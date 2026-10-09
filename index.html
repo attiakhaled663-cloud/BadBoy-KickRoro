@@ -566,7 +566,6 @@
         .quick-item .qi-icon { width:28px; height:28px; border-radius:7px; background:linear-gradient(135deg,rgba(255,255,255,0.12),rgba(255,255,255,0.08)); display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:12px; flex-shrink:0; }
         .quick-channel { padding-left:28px !important; background:rgba(255,255,255,0.015) !important; }
 
-        /* ✅ وضع الإعدادات المنفصلة — صف لكل بوت */
         .qs-sep-toggle {
             display:flex; align-items:center; justify-content:space-between;
             padding:10px 12px; margin-bottom:10px;
@@ -645,7 +644,6 @@
         .channel-actions { display:flex; gap:4px; flex-shrink:0; align-items:center; }
         .channel-actions button { padding:6px 9px; font-size:11px; border-radius:7px; }
 
-        /* ✅ زر التشغيل/الإطفاء لكل قناة */
         .channel-toggle {
             position:relative; width:34px; height:18px; flex-shrink:0;
             border-radius:10px; cursor:pointer; transition:all .25s;
@@ -677,7 +675,6 @@
         html[dir="rtl"] .channel-toggle::after { left:auto; right:2px; }
         html[dir="rtl"] .channel-toggle.on::after { right:18px; left:auto; }
 
-        /* قناة معطّلة */
         .channel-card.disabled {
             opacity:0.45;
             background:rgba(255,255,255,0.015) !important;
@@ -688,7 +685,6 @@
         .channel-card.disabled:hover { opacity:0.65; }
         .channel-card.disabled .channel-name { color:var(--muted); text-decoration:line-through; text-decoration-color:rgba(255,59,59,0.4); }
     
-/* ===== BadBoy Kick — cartoon Halloween theme ===== */
 :root {
     --bg:#070a06; --fg:#eafbe0; --muted:#6b8a6b;
     --accent:#53fc18; --accent2:#9dff6b; --accent3:#b8ff4d;
@@ -772,7 +768,6 @@ body {
 }
 
     
-/* ===== Official Kick API connection ===== */
 .kick-official-wrap{direction:rtl}
 .kick-official-status{
     font-size:9px;padding:4px 7px;border-radius:7px;
@@ -793,7 +788,6 @@ body {
 }
 
 
-        /* ===== فحص حالة التوكنات ===== */
         .token-check-btn{position:relative}.token-check-btn i{color:var(--accent);filter:drop-shadow(0 0 5px rgba(83,252,24,.35))}.token-check-content{padding-top:2px}.token-check-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 12px}.token-stat{border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:12px 10px;background:rgba(255,255,255,.035);text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}.token-stat .ts-icon{width:30px;height:30px;margin:0 auto 7px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(83,252,24,.08)}.token-stat .ts-icon i{font-size:13px;color:var(--accent)}.token-stat .ts-num{font-size:24px;font-weight:900;line-height:1;color:var(--fg)}.token-stat .ts-label{font-size:10px;color:var(--muted);margin-top:5px}.token-stat.expired{border-color:rgba(255,59,59,.32);background:rgba(255,59,59,.055)}.token-stat.expired .ts-icon{background:rgba(255,59,59,.10)}.token-stat.expired .ts-icon i,.token-stat.expired .ts-num{color:#ff7676}.token-stat.active{border-color:rgba(0,200,83,.28);background:rgba(0,200,83,.045)}.token-stat.active .ts-icon{background:rgba(0,200,83,.10)}.token-stat.active .ts-icon i,.token-stat.active .ts-num{color:#59ef96}.token-check-section-title{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:900;color:var(--fg);margin:10px 0 7px}.token-check-section-title i{color:var(--accent);font-size:11px}.expired-list{display:flex;flex-direction:column;gap:6px;max-height:210px;overflow-y:auto;padding-left:2px}.expired-list::-webkit-scrollbar{width:4px}.expired-list::-webkit-scrollbar-thumb{background:rgba(255,59,59,.35);border-radius:2px}.expired-account{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;background:rgba(255,59,59,.06);border:1px solid rgba(255,59,59,.17);color:#ffd1d1;font-size:12px;font-weight:700}.expired-account i{color:#ff6d6d;font-size:11px}.token-empty{text-align:center;padding:13px 8px;border:1px dashed rgba(0,200,83,.28);border-radius:9px;background:rgba(0,200,83,.035);color:#7dffb0;font-size:11px}.token-check-loading{text-align:center;padding:18px 8px 12px;color:var(--muted);font-size:11px}.token-check-errors{margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.2);color:#ffd966;font-size:10px;line-height:1.6}.token-check-note{text-align:center;font-size:9px;color:var(--muted);margin-top:9px;line-height:1.6}@media(max-width:420px){.token-check-stats{gap:6px}.token-stat{padding:10px 8px}.token-stat .ts-num{font-size:21px}}
     </style>
 </head>
@@ -817,9 +811,7 @@ body {
 <div class="toast-box" id="toasts"></div>
 <div class="net-status" id="netStatus"><i class="fas fa-wifi"></i> <span id="netStatusText">--</span></div>
 
-<!-- ✅ نافذة الإرسال المباشر -->
 
-<!-- ✅ نافذة فحص حالة التوكنات -->
 <div class="modal-overlay" id="tokenCheckModal" onclick="if(event.target===this)closeTokenCheck()">
     <div class="modal">
         <div class="modal-x" onclick="closeTokenCheck()" title="إغلاق"><i class="fas fa-xmark"></i></div>
@@ -840,7 +832,6 @@ body {
 
         <div class="modal-divider"></div>
 
-        <!-- ✅ زر الإعدادات المنفصلة — لكل بوت رسالة خاصة -->
         <div class="qs-sep-toggle" onclick="toggleQsSeparateMode()">
             <div class="sep-label">
                 <i class="fas fa-layer-group"></i>
@@ -849,7 +840,6 @@ body {
             <div class="toggle" id="tgQsSeparate"></div>
         </div>
 
-        <!-- ✅ الوضع العادي: بوتات محددة + رسالة واحدة -->
         <div id="qsNormalMode">
             <div class="modal-field">
                 <label><i class="fas fa-robot"></i> اختر البوتات</label>
@@ -870,7 +860,6 @@ body {
             </div>
         </div>
 
-        <!-- ✅ الوضع المنفصل: لكل بوت رسالة خاصة + زر إرسال -->
         <div id="qsSeparateMode" style="display:none">
             <div class="quick-list" id="qsSeparateList" style="max-height:420px"></div>
             <div style="text-align:center;font-size:10px;color:var(--muted);margin-top:8px">
@@ -880,7 +869,6 @@ body {
     </div>
 </div>
 
-<!-- ✅ نافذة قنوات الإرسال المباشر -->
 <div class="modal-overlay" id="qsChannelsModal" onclick="if(event.target===this)closeQsChannels()">
     <div class="modal">
         <div class="modal-x" onclick="closeQsChannels()" title="إغلاق"><i class="fas fa-xmark"></i></div>
@@ -901,7 +889,6 @@ body {
     </div>
 </div>
 
-<!-- ✅ نافذة الإعدادات الموحدة لكل القنوات -->
 <div class="modal-overlay" id="unifiedModal" style="z-index:1200" onclick="if(event.target===this)closeUnifiedSettings()">
     <div class="modal">
         <div class="modal-x" onclick="closeUnifiedSettings()" title="إغلاق"><i class="fas fa-xmark"></i></div>
@@ -940,7 +927,6 @@ body {
 
             <div class="modal-divider"></div>
 
-            <!-- ✅ الترتيب الجديد: تكرار لا نهائي ← رسائل عشوائية ← تأخير عشوائي -->
             <div class="toggle-row">
                 <div class="toggle-label">
                     <div class="tlicon"><i class="fas fa-infinity"></i></div>
@@ -957,7 +943,6 @@ body {
                 <div class="toggle" id="uTgRandomMessages" onclick="uToggleRandomMessages()"></div>
             </div>
 
-            <!-- ✅ رسالتين معاً -->
             <div class="toggle-row">
                 <div class="toggle-label">
                     <div class="tlicon"><i class="fas fa-clone"></i></div>
@@ -977,7 +962,6 @@ body {
                 </div>
                 <div class="toggle" id="uTgRandomDelay" onclick="uToggleRandomDelay()"></div>
             </div>
-            <!-- ✅ تخطيط أفقي: من (يمين) ← إلى (يسار) على سطر واحد -->
             <div class="rd-inline" id="uRandomDelayFields" style="display:none;margin-top:5px">
                 <div class="rd-field">
                     <span class="rd-label">من</span>
@@ -991,7 +975,6 @@ body {
                 </div>
             </div>
 
-            <!-- ✅ وضع رسائلي السرّية (stickersonly) — نفس مسار emote.json -->
             <div class="toggle-row">
                 <div class="toggle-label">
                     <div class="tlicon"><i class="fas fa-face-grin-stars"></i></div>
@@ -1013,7 +996,6 @@ body {
 
             <div class="modal-divider"></div>
 
-            <!-- ✅ استثناء قنوات — ما تنطبش عليها الإعدادات الموحدة وتفضل بإعداداتها الخاصة -->
             <div class="toggle-row">
                 <div class="toggle-label">
                     <div class="tlicon"><i class="fas fa-user-slash"></i></div>
@@ -1040,7 +1022,6 @@ body {
     </div>
 </div>
 
-<!-- ✅ نافذة نقل البيانات بين الأجهزة -->
 <div class="modal-overlay" id="transferModal" onclick="if(event.target===this)closeTransferModal()">
     <div class="modal">
         <div class="modal-x" onclick="closeTransferModal()" title="إغلاق"><i class="fas fa-xmark"></i></div>
@@ -1051,7 +1032,6 @@ body {
 
         <div class="modal-divider"></div>
 
-        <!-- ✅ القسم 1: كود هذا الجهاز -->
         <div class="modal-field">
             <label><i class="fas fa-qrcode"></i> كود هذا الجهاز — انسخه وأرسله للجهاز الآخر</label>
             <textarea id="transferCodeOut" readonly="" placeholder="اضغط زر توليد الكود لإنشاء كود النقل..." style="min-height:90px;font-family:monospace;font-size:11px;word-break:break-all;resize:none"></textarea>
@@ -1064,7 +1044,6 @@ body {
 
         <div class="modal-divider"></div>
 
-        <!-- ✅ القسم 2: استيراد كود من جهاز آخر -->
         <div class="modal-field">
             <label><i class="fas fa-file-import"></i>ادخل كود استرداد البيانات هنا سواءاً من كيك مود او من نفس التطبيق من جهاز اخر</label>
             <textarea id="transferCodeIn" placeholder="الصق الكود هنا... (RK1- أو أي كود مشابه / base64)" style="min-height:90px;font-family:monospace;font-size:11px;word-break:break-all;resize:none"></textarea>
@@ -1082,7 +1061,6 @@ body {
     </div>
 </div>
 
-<!-- ✅ نافذة تجديد التوكن -->
 <div class="modal-overlay" id="renewTokenModal" onclick="if(event.target===this)closeRenewToken()">
     <div class="modal">
         <div class="modal-x" onclick="closeRenewToken()" title="إغلاق"><i class="fas fa-xmark"></i></div>
@@ -1106,7 +1084,6 @@ body {
     </div>
 </div>
 
-<!-- ✅ نافذة استثناء القنوات — إرسال دائم في كل الحالات -->
 <div class="modal-overlay" id="exemptModal" onclick="if(event.target===this)closeExemptModal()">
     <div class="modal">
         <div class="modal-x" onclick="closeExemptModal()" title="إغلاق"><i class="fas fa-xmark"></i></div>
@@ -1136,7 +1113,6 @@ body {
     </div>
 </div>
 
-<!-- ✅ نافذة تأكيد الحذف -->
 <div class="modal-overlay" id="confirmDeleteModal" style="z-index:2000" onclick="if(event.target===this)closeConfirmDelete()">
     <div class="modal" style="max-width:340px;text-align:center">
         <div class="modal-x" onclick="closeConfirmDelete()" title="إغلاق"><i class="fas fa-xmark"></i></div>
@@ -1153,7 +1129,6 @@ body {
     </div>
 </div>
 
-<!-- النافذة المنبثقة للإعدادات -->
 <div class="modal-overlay" id="settingsModal" onclick="if(event.target===this)closeSettings()">
     <div class="modal">
         <div class="modal-x" onclick="closeSettings()" title="إغلاق"><i class="fas fa-xmark"></i></div>
@@ -1164,7 +1139,6 @@ body {
 
         <div class="modal-divider"></div>
 
-        <!-- زر إضافة قناة -->
         <div class="modal-field">
             <label><i class="fas fa-hashtag"></i> إضافة قناة</label>
             <div class="row">
@@ -1174,14 +1148,12 @@ body {
             <div class="hint" id="mChannelFilterHint" style="display:none"></div>
         </div>
 
-        <!-- ✅ زر الإعدادات الموحدة الخاص بهذا الحساب فقط -->
         <div class="modal-field">
             <button class="btn btn-ghost" style="width:100%" onclick="openUnifiedSettings()" title="تطبيق إعدادات واحدة على كل قنوات هذا الحساب">
                 <i class="fas fa-screwdriver-wrench"></i> إعدادات موحدة لقنوات هذا الحساب
             </button>
         </div>
 
-        <!-- ✅ تبويبات فلترة القنوات: الكل / مباشر / OFF -->
         <div class="channels-filter-tabs" id="channelsFilterTabs">
             <div class="channels-filter-tab active" data-filter="all" onclick="setChannelsFilter('all')">
                 <span>الكل</span><span class="cf-badge" id="cfCountAll">0</span>
@@ -1194,12 +1166,10 @@ body {
             </div>
         </div>
 
-        <!-- قائمة القنوات -->
         <div class="channels-list" id="mChannelsList"></div>
 
         <div class="modal-divider"></div>
 
-        <!-- ✅ التعافي التلقائي + الإرسال المتوازي: مفعّلان دائماً ومخفيان عن الواجهة -->
         <div class="toggle-row" style="display:none">
             <div class="toggle-label">
                 <div class="tlicon"><i class="fas fa-shield-halved"></i></div>
@@ -1222,7 +1192,6 @@ body {
     </div>
 </div>
 
-<!-- نافذة إعدادات قناة محددة -->
 <div class="modal-overlay" id="channelModal" onclick="if(event.target===this)closeChannelSettings()">
     <div class="modal">
         <div class="modal-x" onclick="closeChannelSettings()" title="إغلاق"><i class="fas fa-xmark"></i></div>
@@ -1259,7 +1228,6 @@ body {
             <div class="toggle" id="tgChannelInfinite" onclick="cToggleInfinite()"></div>
         </div>
 
-        <!-- ✅ التأخير العشوائي -->
         <div class="toggle-row">
             <div class="toggle-label">
                 <div class="tlicon"><i class="fas fa-shuffle"></i></div>
@@ -1278,7 +1246,6 @@ body {
             </div>
         </div>
 
-        <!-- ✅ الرسائل العشوائية -->
         <div class="toggle-row">
             <div class="toggle-label">
                 <div class="tlicon"><i class="fas fa-dice"></i></div>
@@ -1287,7 +1254,6 @@ body {
             <div class="toggle" id="tgRandomMessages" onclick="cToggleRandomMessages()"></div>
         </div>
 
-        <!-- ✅ رسالتين معاً -->
         <div class="toggle-row">
             <div class="toggle-label">
                 <div class="tlicon"><i class="fas fa-clone"></i></div>
@@ -1299,7 +1265,6 @@ body {
             <div class="toggle" id="tgTwoMessages" onclick="cToggleTwoMessages()"></div>
         </div>
 
-        <!-- ✅ أربعة رسائل معاً -->
         <div class="toggle-row">
             <div class="toggle-label">
                 <div class="tlicon"><i class="fas fa-clone"></i></div>
@@ -1322,7 +1287,6 @@ body {
             <div class="toggle" id="tgStickersOnly" onclick="cToggleStickersOnly()"></div>
         </div>
 
-        <!-- ✅ تعليقات للاستريمر تمساح — نفس زر الإعدادات الموحدة -->
         <div class="toggle-row">
             <div class="toggle-label">
                 <div class="tlicon"><i class="fas fa-comment"></i></div>
@@ -1338,11 +1302,8 @@ body {
     </div>
 </div>
 
-<!-- التطبيق -->
 <div class="app-container">
 
-    <!-- شاشة التحميل -->
-    <!-- ✅ شاشة الدخول النارية -->
     <div class="splash hide" id="splash" style="display: none;">
         <canvas id="splashFire" width="1024" height="568"></canvas>
         <div class="splash-content">
@@ -1369,9 +1330,7 @@ body {
         <p style="color:var(--muted);font-size:14px">جارٍ التحميل...</p>
     </div>
 
-    <!-- إضافة بوت جديد -->
     <div class="phase" id="ph-add">
-        <!-- ✅ زر العودة في الأعلى -->
         <div class="back-bar">
             <button class="back-btn" onclick="navBackFromAdd()" title="رجوع للبوتات">
                 <i class="fas fa-arrow-right"></i>
@@ -1395,7 +1354,6 @@ body {
         </div>
     </div>
 
-    <!-- قائمة البوتات (الواجهة الرئيسية) -->
     <div class="phase active" id="ph-main">
         <div class="app-header">
             <div class="logo-img" style="background:url('./RedKick_files/ab46995c-be54-4f0c-97d9-dc9965e3150b.png') center/cover no-repeat;border-radius:50%;outline:none;border:2px solid #000;box-shadow:0 0 0 2px #000,0 0 8px rgba(83,252,24,.05)"></div>
@@ -1406,13 +1364,11 @@ body {
             <button class="btn btn-ghost btn-xs" onclick="openTransferModal()" title="نقل البيانات بين الأجهزة" style="flex-shrink:0"><i class="fas fa-share-nodes"></i></button>
             <button class="btn btn-ghost btn-xs token-check-btn" onclick="openTokenCheck()" title="فحص حالة التوكنات" aria-label="فحص حالة التوكنات" style="flex-shrink:0">🔍</button>
             <button class="btn btn-fire btn-xs" onclick="openQuickSend()" title="إرسال رسالة مباشرة" style="flex-shrink:0"><i class="fas fa-paper-plane"></i></button>
-            <!-- ✅ زر الإرسال لغير المباشر — مستقل عن الإعدادات الموحدة -->
             <div class="header-toggle" onclick="toggleSendToNonLive()" title="عند التفعيل: ترسل لكل القنوات (مباشر وغير مباشر). عند الإيقاف: ترسل فقط للبث المباشر">
                 <i class="fas fa-tower-broadcast" style="color:var(--accent);font-size:10px"></i>
                 <span class="ht-label">غير مباشر</span>
                 <div class="toggle" id="tgSendNonLive"></div>
             </div>
-            <!-- ✅ استثناء قنوات — إرسال دائم في كل الحالات (مباشر أو موقوف) -->
             <button class="btn btn-ghost btn-xs" onclick="openExemptModal()" title="استثناء قنوات — تُرسل لها الرسائل دائماً في كل حالاتها، حتى لو كان بثّها موقوفاً" style="flex-shrink:0;position:relative">
                 <i class="fas fa-star"></i>
                 <span id="exemptBadge" style="display:none;position:absolute;top:-5px;left:-5px;min-width:15px;height:15px;border-radius:8px;background:var(--accent);color:#000;font-size:9px;font-weight:900;align-items:center;justify-content:center;padding:0 3px"></span>
@@ -1442,19 +1398,13 @@ body {
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════════════════
-   BadBoy Kick — نسخة محسّنة ونظيفة
-   ═══════════════════════════════════════════════════════════ */
 
-// ✅ طبقة الشبكة والبروكسيات ودالة الإرسال انتقلت إلى api.js (يُحمَّل في الـ head)
-// ✅ الحدود القصوى لتفادي اللاغ
 var MAX_BOTS = 9999;
 var MAX_CHANNELS_PER_BOT = 9999;
 
-// ✅ نظام Throttling قوي لتحديثات UI — يمنع اللاغ تماماً
 var _uiUpdatePending = false;
 var _uiUpdateTimer = null;
-var UI_UPDATE_INTERVAL = 2000; // تحديث UI كل 2 ثانية كحد أقصى (يقلل اللاغ)
+var UI_UPDATE_INTERVAL = 2000;
 
 function requestUIUpdate() {
     if (_uiUpdatePending) return;
@@ -1472,7 +1422,6 @@ function requestUIUpdate() {
     }, UI_UPDATE_INTERVAL);
 }
 
-// تحديث فوري (للأحداث المهمة فقط: بدء/إيقاف)
 function forceUIUpdate() {
     if (_uiUpdateTimer) { clearTimeout(_uiUpdateTimer); _uiUpdateTimer = null; }
     _uiUpdatePending = false;
@@ -1484,9 +1433,6 @@ function forceUIUpdate() {
     }
 }
 
-// ═══════════════════════════════════════
-//  جلب القناة و chatroom_id
-// ═══════════════════════════════════════
 async function fetchChannel(slug, acc) {
     slug = slug.trim().toLowerCase().replace(/^\/+|\/+$|\s+/g, '');
     if (!slug) throw new Error('اسم القناة فارغ');
@@ -1494,9 +1440,8 @@ async function fetchChannel(slug, acc) {
 
     var lastErr = null;
 
-    var foundButInvalid = false; // ✅ البروكسي ردّ 200 لكن البيانات غير صالحة
+    var foundButInvalid = false;
 
-    // المحاولة 1: v2 channels
     try {
         var r1 = await proxiedFetch('/api/v2/channels/'+slug, {skipAuth:true, timeout:8000, preferredProxy:acc.workingProxy});
         if (r1.res.ok) {
@@ -1506,11 +1451,9 @@ async function fetchChannel(slug, acc) {
                 var dd = data.data || data;
                 if (dd.id || dd.chatroom_id || dd.chatroom || dd.slug) return data;
             }
-            // ✅ البروكسي ردّ 200 لكن بيانات غير صالحة — اعتبره فشلاً للبروكسي
             foundButInvalid = true;
             _proxyFailCount[r1.proxyUsed] = (_proxyFailCount[r1.proxyUsed] || 0) + 1;
         } else if (r1.res.status === 404) {
-            // القناة غير موجودة فعلاً
             throw new Error('NOT_FOUND');
         }
     } catch(e) {
@@ -1518,7 +1461,6 @@ async function fetchChannel(slug, acc) {
         lastErr = e;
     }
 
-    // المحاولة 2: v1 channels
     try {
         var r2 = await proxiedFetch('/api/v1/channels/'+slug, {skipAuth:true, timeout:8000, preferredProxy:acc.workingProxy});
         if (r2.res.ok) {
@@ -1538,7 +1480,6 @@ async function fetchChannel(slug, acc) {
         lastErr = e;
     }
 
-    // المحاولة 3: search endpoint (يجد القنوات بأسماء مشابهة)
     try {
         var r3 = await proxiedFetch('/api/search?q='+encodeURIComponent(slug), {skipAuth:true, timeout:8000, preferredProxy:acc.workingProxy});
         if (r3.res.ok) {
@@ -1550,10 +1491,8 @@ async function fetchChannel(slug, acc) {
                     for (var i = 0; i < items.length; i++) {
                         var item = items[i];
                         if (item.slug === slug || item.username === slug) return item;
-                        // تطابق جزئي (القناة تبدأ بنفس الاسم)
                         if (item.slug && item.slug.indexOf(slug) === 0) return item;
                     }
-                    // إذا وجدنا نتائج، خذ الأولى
                     if (items.length > 0 && items[0].slug) return items[0];
                 }
             }
@@ -1564,13 +1503,10 @@ async function fetchChannel(slug, acc) {
         lastErr = e;
     }
 
-    // ✅ تمييز نوع الخطأ
     if (lastErr) {
-        // فشل شبكة/بروكسي — القناة قد تكون موجودة لكن لم نتمكن من الوصول
         throw new Error('CONNECTION_ERROR');
     }
     if (foundButInvalid) {
-        // ✅ البروكسي ردّ لكن بيانات غير صالحة — القناة ربما موجودة
         throw new Error('CONNECTION_ERROR');
     }
     throw new Error('NOT_FOUND');
@@ -1613,10 +1549,7 @@ async function fetchChatroomId(slug, acc) {
     return null;
 }
 
-// ✅ التحقق من حالة البث المباشر للقناة
-// يرجع: true (تبث), false (أوفلاين), null (فشل الفحص)
 async function checkChannelLive(slug, acc) {
-    // ✅ كيك يحوّل (_) إلى (-) في الـ slug — جرّب الصيغتين، ولا تعتبر القناة أوفلاين إلا إذا كل الصيغ الناجحة قالت أوفلاين
     var variants = [slug];
     if (slug.indexOf('-') !== -1) variants.push(slug.replace(/-/g, '_'));
     if (slug.indexOf('_') !== -1) variants.push(slug.replace(/_/g, '-'));
@@ -1626,7 +1559,7 @@ async function checkChannelLive(slug, acc) {
         if (v === true) return true;
         if (v === false) sawOffline = true;
     }
-    return sawOffline ? false : null; // null = فشل الفحص (لا يوقف الإرسال)
+    return sawOffline ? false : null;
 }
 
 async function _checkChannelLiveOne(slug, acc) {
@@ -1646,7 +1579,6 @@ async function _checkChannelLiveOne(slug, acc) {
                     return true;
                 }
                 if (dd.livestream === null) return false;
-                // لا يوجد أي حقل بث — لا تحكم (null) بدل افتراض أونلاين
                 return null;
             }
         }
@@ -1654,9 +1586,6 @@ async function _checkChannelLiveOne(slug, acc) {
     return null;
 }
 
-// ═══════════════════════════════════════
-//  ✅ مراقبة حالة البث لكل قنوات الحساب المفتوح — كل 45 ثانية
-// ═══════════════════════════════════════
 async function pollChannelsLiveStatus(b) {
     if (!b || !b.channels || b.channels.length === 0) return;
     await Promise.all(b.channels.map(function(ch) {
@@ -1665,19 +1594,18 @@ async function pollChannelsLiveStatus(b) {
         }).catch(function(){});
     }));
     persist();
-    // ✅ أعد الرسم فقط لو نفس الحساب لا يزال مفتوحاً (تجنّب سباق إذا تغيّر الحساب أثناء الفحص)
     if (activeModalBotId === b.id) renderChannelsList(b);
 }
 
 function startChannelsLiveMonitor(b) {
     stopChannelsLiveMonitor();
     if (!b) return;
-    pollChannelsLiveStatus(b); // ✅ فحص فوري عند فتح النافذة
+    pollChannelsLiveStatus(b);
     channelsLiveMonitorTimer = setInterval(function() {
         var bb = findBot(activeModalBotId);
         if (bb) pollChannelsLiveStatus(bb);
         else stopChannelsLiveMonitor();
-    }, 45000); // ✅ كل 45 ثانية من السيرفر
+    }, 45000);
 }
 
 function stopChannelsLiveMonitor() {
@@ -1687,9 +1615,6 @@ function stopChannelsLiveMonitor() {
     }
 }
 
-// ═══════════════════════════════════════
-//  ✅ تحقق شامل من القناة — يجرب كل بروكسي بشكل فردي
-// ═══════════════════════════════════════
 async function tryFetchWithAllProxies(kickPath, options) {
     options = options || {};
     var timeout = options.timeout || 8000;
@@ -1712,26 +1637,22 @@ async function tryFetchWithAllProxies(kickPath, options) {
                 saveBestProxy();
                 return { res: res, proxyUsed: p, ok: true };
             }
-            // 404 = القناة غير موجودة من هذا البروكسي
             if (res && res.status === 404) {
                 notFoundCount++;
                 _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
                 continue;
             }
-            // خطأ HTTP آخر — جرب البروكسي التالي
             _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
         } catch(e) {
             _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
         }
     }
-    // ✅ إذا كل البروكسيات ردّت 404، القناة غير موجودة فعلاً
     if (notFoundCount === totalProxies && totalProxies > 0) {
         return { ok: false, notFound: true };
     }
     return { ok: false, notFound: false };
 }
 
-// ✅ تحقق شامل من القناة مع تجربة كل البروكسيات والـ endpoints
 async function verifyChannelComprehensive(slug, bot) {
     slug = slug.trim().toLowerCase().replace(/^\/+|\/+$/g, '').replace(/\s+/g, '');
     if (!slug) return { ok: false, reason: 'empty' };
@@ -1742,7 +1663,6 @@ async function verifyChannelComprehensive(slug, bot) {
         '/api/v2/channels/' + slug + '/chatroom'
     ];
 
-    // ✅ جرّب كل endpoint مع كل بروكسي
     for (var ei = 0; ei < endpoints.length; ei++) {
         var result = await tryFetchWithAllProxies(endpoints[ei], {
             timeout: 8000,
@@ -1761,13 +1681,11 @@ async function verifyChannelComprehensive(slug, bot) {
                 }
             } catch(e) {}
         }
-        // ✅ إذا كل البروكسيات قالت 404، القناة غير موجودة
         if (result && result.notFound) {
             return { ok: false, reason: 'not_found' };
         }
     }
 
-    // ✅ جرّب search endpoint كآخر محاولة
     var searchResult = await tryFetchWithAllProxies('/api/search?q=' + encodeURIComponent(slug), {
         timeout: 8000,
         preferredProxy: bot ? bot.workingProxy : undefined
@@ -1797,19 +1715,15 @@ async function verifyChannelComprehensive(slug, bot) {
     return { ok: false, reason: 'connection_error' };
 }
 
-// ✅ دالة إرسال الرسائل (sendMessage) انتقلت إلى api.js
 
-// ═══════════════════════════════════════
-//  النظام: تخزين دائم + إدارة البوتات
-// ═══════════════════════════════════════
 var STORAGE_KEY = 'redkick_bots_v2';
-var accounts = [];           // كل البوتات
-var accIdCounter = 0;        // عداد لإنشاء معرّفات فريدة
-var selectedBots = {};       // معرّفات البوتات المحددة
-var activeModalBotId = null; // البوت المفتوح إعداداته حالياً
-var channelsFilterTab = 'all'; // فلتر قائمة القنوات: all / live / off
-var channelsLiveMonitorTimer = null; // مؤقت مراقبة حالة البث كل 45 ثانية
-var abortControllers = {};   // للتحكم بإيقاف البوتات
+var accounts = [];
+var accIdCounter = 0;
+var selectedBots = {};
+var activeModalBotId = null;
+var channelsFilterTab = 'all';
+var channelsLiveMonitorTimer = null;
+var abortControllers = {};
 
 function makeBot(token, username) {
     accIdCounter++;
@@ -1817,10 +1731,9 @@ function makeBot(token, username) {
         id: accIdCounter,
         token: token,
         username: username,
-        channels: [],           // مصفوفة قنوات، كل قناة لها إعداداتها الخاصة
-        autoRecover: true,      // التعافي التلقائي (للبوت ككل)
-        parallel: true,         // الإرسال المتوازي بين القنوات
-        // حالة التشغيل (لا تُحفظ)
+        channels: [],
+        autoRecover: true,
+        parallel: true,
         isSending: false,
         sent: 0,
         workingProxy: -1,
@@ -1828,27 +1741,25 @@ function makeBot(token, username) {
     };
 }
 
-// إنشاء قناة جديدة بالإعدادات الافتراضية
 function makeChannel(slug) {
     return {
         slug: slug,
-        messages: '',           // الرسائل (كل سطر = رسالة)
-        interval: 5,            // التأخير بالثواني (ثابت)
-        repeat: 0,              // عدد التكرار
-        isInfinite: true,      // تكرار لا نهائي
-        enabled: true,          // ✅ مفعّلة افتراضياً (زر التشغيل/الإطفاء)
-        randomDelay: false,     // ✅ التأخير العشوائي
-        delayMin: 5,            // ✅ الحد الأدنى للتأخير العشوائي
-        delayMax: 120,            // ✅ الحد الأقصى للتأخير العشوائي
-        randomMessages: false,  // ✅ الرسائل العشوائية
-        chatroomId: null,       // ✅ معرّف الدردشة (يُحفظ عند الإضافة)
-        verified: false,        // ✅ تم التحقق من القناة
-        twoMessages: false,     // ✅ رسالتين معاً
-        fourMessages: false,   // ✅ أربعة رسائل معاً
-        stickersOnly: false,    // ✅ رسائل
-        streamerComments: false, // ✅ تعليقات للاستريمر تمساح
-        // حالة التشغيل (لا تُحفظ)
-        status: 'idle',         // idle | connecting | on | off | sending | failed
+        messages: '',
+        interval: 5,
+        repeat: 0,
+        isInfinite: true,
+        enabled: true,
+        randomDelay: false,
+        delayMin: 5,
+        delayMax: 120,
+        randomMessages: false,
+        chatroomId: null,
+        verified: false,
+        twoMessages: false,
+        fourMessages: false,
+        stickersOnly: false,
+        streamerComments: false,
+        status: 'idle',
         sent: 0,
         error: '',
         retries: 0
@@ -1862,7 +1773,6 @@ function findBot(id) {
     return null;
 }
 
-// ✅ الإعدادات الموحدة — أصبحت خاصة بكل حساب على حدة (وليست عامة لكل الحسابات)
 function defaultUnified() {
     return {
         enabled: false,
@@ -1874,10 +1784,10 @@ function defaultUnified() {
         delayMin: 240,
         delayMax: 300,
         randomMessages: false,
-        stickersOnly: false,        // ✅ وضع رسائلي السرّية — تُجلب من نفس مسار emote.json
-        streamerComments: false, // ✅ تعليقات للاستريمر تمساح — بدون كلمة سر
-        twoMessages: false,         // ✅ رسالتين معاً
-        excludedChannels: []        // ✅ قنوات مستثناة لا تنطبق عليها الإعدادات الموحدة
+        stickersOnly: false,
+        streamerComments: false,
+        twoMessages: false,
+        excludedChannels: []
     };
 }
 function getBotUnified(b) {
@@ -1885,7 +1795,6 @@ function getBotUnified(b) {
     return b.unified;
 }
 
-// ✅ هل هذه القناة مستثناة من الإعدادات الموحدة؟
 function isUnifiedExcludedChannel(u, slug) {
     if (!u || !Array.isArray(u.excludedChannels)) return false;
     var n = normSlug(slug);
@@ -1893,9 +1802,6 @@ function isUnifiedExcludedChannel(u, slug) {
     return u.excludedChannels.indexOf(n) !== -1;
 }
 
-// ✅ تطبيق الإعدادات الموحدة على قنوات الحساب:
-//    القنوات غير المستثناة ← تُمسح إعداداتها الخاصة ثم تُكتب عليها الإعدادات الموحدة
-//    القنوات المستثناة ← تُترك بإعداداتها الخاصة كما هي
 function applyUnifiedToChannels(b, u, stickersText) {
     if (!b || !b.channels || !u) return 0;
     var applied = 0;
@@ -1927,13 +1833,8 @@ function findChannel(bot, slug) {
     return null;
 }
 
-// ✅ الإعدادات الموحدة لكل القنوات
-// ✅ sendToNonLive: false (افتراضي) = البوتات ترسل فقط للبث المباشر
-// ✅ sendToNonLive: true = البوتات ترسل لكل القنوات (مباشر + غير مباشر)
-// ✅ ملاحظة: sendToNonLive متغيّر عالمي مستقل عن الإعدادات الموحدة الخاصة بكل حساب
 var sendToNonLive = false;
 
-// ✅ تحميل حالة sendToNonLive من localStorage
 var SEND_NON_LIVE_KEY = 'redkick_send_non_live_v1';
 function loadSendToNonLive() {
     try {
@@ -1945,7 +1846,6 @@ function saveSendToNonLive() {
     try { localStorage.setItem(SEND_NON_LIVE_KEY, sendToNonLive ? '1' : '0'); } catch(e) {}
 }
 
-// ✅ تبديل حالة الإرسال لغير المباشر — مستقل عن الإعدادات الموحدة
 function toggleSendToNonLive() {
     sendToNonLive = !sendToNonLive;
     setToggle('tgSendNonLive', sendToNonLive);
@@ -1953,15 +1853,9 @@ function toggleSendToNonLive() {
     toast(sendToNonLive ? 'تم تفعيل الإرسال لغير المباشر — كل القنوات' : 'تم تفعيل الإرسال للبث المباشر فقط', 'i');
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  ✅ استثناء قنوات — إرسال دائم في كل الحالات (مباشر أو موقوف)
-//  القناة المستثناة تُرسل لها الرسائل دائماً حتى لو كان بثّها موقوفاً
-//  مستقل تماماً عن زر (غير مباشر): هذا استثناء لقنوات محددة فقط
-// ═══════════════════════════════════════════════════════════════
 var EXEMPT_KEY = 'redkick_exempt_channels_v1';
-var exemptChannels = []; // أسماء القنوات المستثناة (بصيغة موحّدة بلا @ وبحروف صغيرة)
+var exemptChannels = [];
 
-// ✅ توحيد اسم القناة للمقارنة (إزالة @ والمسافات وتوحيد الحروف)
 function normSlug(s) {
     return String(s || '').trim().replace(/^@+/, '').toLowerCase();
 }
@@ -1978,7 +1872,6 @@ function saveExemptChannels() {
     try { localStorage.setItem(EXEMPT_KEY, JSON.stringify(exemptChannels)); } catch(e) {}
 }
 
-// ✅ هل هذه القناة مستثناة؟ (تُرسل في كل الحالات)
 function isExemptChannel(slug) {
     var n = normSlug(slug);
     if (!n) return false;
@@ -2007,14 +1900,12 @@ function toggleExemptChannel(slug) {
     if (isExemptChannel(slug)) removeExemptChannel(slug); else addExemptChannel(slug);
     renderExemptList();
     updateExemptBadge();
-    // ✅ حدّث قائمة القنوات داخل نافذة الإعدادات إن كانت مفتوحة
     if (activeModalBotId !== null) {
         var b = findBot(activeModalBotId);
         if (b) renderChannelsList(b);
     }
 }
 
-// ✅ عدّاد صغير على زر الاستثناء في الترويسة
 function updateExemptBadge() {
     var el = document.getElementById('exemptBadge');
     if (!el) return;
@@ -2035,7 +1926,6 @@ function closeExemptModal() {
     if (m) m.classList.remove('open');
 }
 
-// ✅ جمع كل القنوات المضافة في كل الحسابات (مع اسم البوت المالكة)
 function collectAllChannels() {
     var out = [];
     var seen = {};
@@ -2053,7 +1943,6 @@ function collectAllChannels() {
             out.push(item);
         }
     }
-    // ✅ أضف أي قنوات مستثناة سابقاً ولم تعد موجودة بأي بوت
     for (var ei = 0; ei < exemptChannels.length; ei++) {
         var en = exemptChannels[ei];
         if (!seen[en]) out.push({ slug: en, display: en, bots: [], isLive: null, orphan: true });
@@ -2061,7 +1950,6 @@ function collectAllChannels() {
     return out;
 }
 
-// ✅ عرض كل قنوات الحسابات كقائمة اختيار (checkboxes) — المستثناة معلّمة مسبقاً
 function renderExemptList() {
     var box = document.getElementById('exemptList');
     if (!box) return;
@@ -2071,7 +1959,6 @@ function renderExemptList() {
     if (sEl) q = normSlug(sEl.value);
     var list = q ? all.filter(function(it){ return it.slug.indexOf(q) !== -1; }) : all;
 
-    // ✅ عدّاد المستثنى
     var cntEl = document.getElementById('exemptCount');
     if (cntEl) cntEl.textContent = exemptChannels.length + ' مستثناة';
 
@@ -2102,7 +1989,6 @@ function renderExemptList() {
     box.innerHTML = html;
 }
 
-// ✅ تحديد الكل / مسح الاستثناء من داخل النافذة
 function exemptSelectAll(on) {
     var all = collectAllChannels();
     if (on) {
@@ -2120,13 +2006,11 @@ function exemptSelectAll(on) {
 function getEffectiveChannelSettings(ch, bot) {
     var u = bot ? getBotUnified(bot) : null;
     if (u && u.enabled) {
-        // ✅ القنوات المستثناة لا تنطبق عليها الإعدادات الموحدة — تفضل بإعداداتها الخاصة
         if (isUnifiedExcludedChannel(u, ch.slug)) {
             ch.sendToNonLive = sendToNonLive;
             ch.exempt = isExemptChannel(ch.slug);
             return ch;
         }
-        // ✅ وضع رسائلي السرّية — الرسائل تُجلب من نفس مسار emote.json
         var effStickers = !!u.stickersOnly;
         var effStreamerComments = !!u.streamerComments;
         var effMessages = effStreamerComments ? TAMSAH_STREAMER_COMMENTS.join('\n') : (effStickers ? (stickersList || u.messages || ch.messages) : (u.messages || ch.messages));
@@ -2152,7 +2036,6 @@ function getEffectiveChannelSettings(ch, bot) {
     return ch;
 }
 
-// ✅ تُفتح دائماً من داخل نافذة إعدادات الحساب — تطبّق فقط على قنوات هذا الحساب (activeModalBotId)
 function openUnifiedSettings() {
     if (activeModalBotId === null) return;
     var b = findBot(activeModalBotId);
@@ -2175,7 +2058,6 @@ function openUnifiedSettings() {
     $('uMessages').readOnly = false;
     renderUnifiedExcludedList();
     if (u.stickersOnly) {
-        // ✅ نفس مسار emote.json عبر ensureStickersList
         ensureStickersList().then(function (list) {
             if (!list) { toast('تعذر تحميل رسائل stickersonly — تأكد من رفع emote.json واستبدال YOUR_USERNAME/YOUR_REPO في الرابط', 'e'); return; }
             $('uMessages').value = list;
@@ -2196,11 +2078,7 @@ function closeUnifiedSettings() {
     $('unifiedModal').classList.remove('open');
 }
 
-// ═══════════════════════════════════════
-//  ✅ نقل البيانات بين الأجهزة (Transfer Code)
-// ═══════════════════════════════════════
 
-// ✅ تحويل نص UTF-8 إلى base64 (يتعامل مع العربية والرموز)
 function utf8ToBase64(str) {
     try {
         return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(m, p1) {
@@ -2209,23 +2087,17 @@ function utf8ToBase64(str) {
     } catch(e) { return ''; }
 }
 
-// ✅ تحويل base64 إلى نص UTF-8 — متسامح مع المسافات والأسطر الجديدة والحشوة (=) وترميز URL-safe (- و _)
 function base64ToUtf8(b64) {
     try {
         var s = String(b64 || '').replace(/\s+/g, '');
-        // ✅ دعم base64 بترميز URL-safe قبل حذف الرموز غير الصالحة
         s = s.replace(/-/g, '+').replace(/_/g, '/');
-        // ✅ إزالة أي أحرف غير صالحة في base64
         s = s.replace(/[^A-Za-z0-9+/=]/g, '');
-        // ✅ إصلاح الـ padding (يجب أن يكون طول base64 من مضاعفات 4)
         var pad = s.length % 4;
-        if (pad === 1) return ''; // طول غير صالح تماماً
+        if (pad === 1) return '';
         if (pad === 2) s += '==';
         else if (pad === 3) s += '=';
-        // ✅ فك التشفير
         var decoded;
         try { decoded = atob(s); } catch(e) { return ''; }
-        // ✅ تحويل إلى UTF-8 (مع احتياطي لو كانت البايتات غير UTF-8)
         try {
             return decodeURIComponent(Array.prototype.map.call(decoded, function(c) {
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
@@ -2234,13 +2106,7 @@ function base64ToUtf8(b64) {
     } catch(e) { return ''; }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  ✅ محرّك قراءة الأكواد — يقبل أكواد هذا الموقع وكل الأكواد المشابهة
-//  يقبل: بادئة RK1- أو بدون بادئة | base64 عادي أو URL-safe | JSON مباشر
-//  ويقبل البُنى: bots / accounts / users / targets / channels / interBotDelay …
-// ═══════════════════════════════════════════════════════════════
 
-// ✅ تأخير التشغيل بين البوتات (يُقرأ من الأكواد المستوردة ويُحفظ محلياً)
 var INTER_BOT_DELAY_KEY = 'redkick_inter_bot_delay_v1';
 var _interBotDelay = 3000;
 function loadInterBotDelay() {
@@ -2253,7 +2119,6 @@ function saveInterBotDelay() {
     try { localStorage.setItem(INTER_BOT_DELAY_KEY, String(Math.max(0, Math.round(_interBotDelay || 0)))); } catch(e) {}
 }
 
-// ✅ قراءة أول قيمة موجودة من قائمة مفاتيح محتملة
 function _xPick(obj, keys) {
     if (!obj || typeof obj !== 'object') return undefined;
     for (var i = 0; i < keys.length; i++) {
@@ -2263,7 +2128,6 @@ function _xPick(obj, keys) {
     return undefined;
 }
 
-// ✅ تحويل أي قيمة إلى منطقي مع قيمة افتراضية
 function _xTruthy(v, def) {
     if (v === undefined || v === null || v === '') return def;
     if (typeof v === 'boolean') return v;
@@ -2284,7 +2148,6 @@ function _xNumOrNull(v) {
     return isFinite(n) ? n : null;
 }
 
-// ✅ استخراج نص الرسائل من أي شكل (نص / مصفوفة / كائن)
 function xferMsgText(v) {
     if (v === undefined || v === null) return '';
     if (typeof v === 'string') return v;
@@ -2305,7 +2168,6 @@ function xferMsgText(v) {
     return '';
 }
 
-// ✅ توحيد اسم القناة (إزالة الروابط و@ والمسافات)
 function xferSlug(s) {
     if (s === undefined || s === null) return '';
     var t = String(s).trim();
@@ -2317,7 +2179,6 @@ function xferSlug(s) {
     return t.toLowerCase();
 }
 
-// ✅ تحليل JSON بشكل متسامح (يتجاهل أي نص زائد حول الكائن)
 function _xTryJson(s) {
     if (typeof s !== 'string') return null;
     var t = s.trim();
@@ -2339,16 +2200,13 @@ function _xTryJsonLoose(s) {
     return null;
 }
 
-// ✅ فك أي كود: بادئة أو بدون، base64 أو JSON مباشر، عادي أو URL-safe
 function decodeTransferPayload(raw) {
     var text = String(raw || '').trim();
     if (!text) return { ok: false, error: 'الصق الكود أولاً' };
 
-    // 1) كود JSON مباشر (بدون تشفير)
     var direct = _xTryJsonLoose(text);
     if (direct) return { ok: true, data: direct, format: 'json' };
 
-    // 2) مرشّحون: الكود كما هو أولاً (حتى لا يتأثر base64 المرمّز URL-safe)
     var cands = [text];
     var m = text.match(/^[A-Za-z][A-Za-z0-9 _-]{0,11}-/);
     if (m) cands.push(text.substring(m[0].length));
@@ -2364,7 +2222,6 @@ function decodeTransferPayload(raw) {
         var dec = base64ToUtf8(c);
         var obj = _xTryJsonLoose(dec);
         if (obj) return { ok: true, data: obj, format: 'base64' };
-        // ✅ بعض الأكواد تُغلّف الـ JSON كنص داخل نص
         var t = String(dec || '').trim();
         if (t.charAt(0) === '"') {
             try {
@@ -2377,7 +2234,6 @@ function decodeTransferPayload(raw) {
     return { ok: false, error: 'كود تالف أو غير مكتمل — تأكد من نسخ/لصق الكود كاملاً' };
 }
 
-// ✅ تحويل أي عنصر إلى قناة (نص أو كائن) — مع دعم مفتاح الخريطة كاسم قناة
 function xferChannelFrom(it, fallbackSlug) {
     var slug = '', src = null;
     var SLUG_KEYS = ['slug', 'channel', 'channelSlug', 'channel_slug', 'channelName', 'channel_name',
@@ -2393,7 +2249,6 @@ function xferChannelFrom(it, fallbackSlug) {
             src = it.channel;
         }
     }
-    // ✅ إن لم يوجد اسم داخل الكائن، استخدم مفتاح الخريطة (hash)
     if (!slug) slug = xferSlug(fallbackSlug);
     if (!slug) return null;
     src = src || {};
@@ -2417,11 +2272,10 @@ function xferChannelFrom(it, fallbackSlug) {
     };
 }
 
-// ✅ تحويل أي قائمة قنوات (مصفوفة / نص / خريطة) إلى قنوات
 function xferChannelList(list) {
     var out = [];
     if (!list) return out;
-    var items = [];   // كل عنصر: { value, key }
+    var items = [];
     if (Array.isArray(list)) {
         for (var i = 0; i < list.length; i++) items.push({ value: list[i], key: null });
     } else if (typeof list === 'string' || typeof list === 'number') {
@@ -2434,9 +2288,9 @@ function xferChannelList(list) {
             if (v && typeof v === 'object' && !Array.isArray(v)) {
                 var cp = {};
                 for (var kk in v) { if (Object.prototype.hasOwnProperty.call(v, kk)) cp[kk] = v[kk]; }
-                items.push({ value: cp, key: k }); // ✅ المفتاح يُستخدم كاسم قناة عند غياب الاسم
+                items.push({ value: cp, key: k });
             } else {
-                items.push({ value: k, key: null }); // ✅ { اسم: قيمة } = اسم القناة هو المفتاح
+                items.push({ value: k, key: null });
             }
         }
     }
@@ -2447,7 +2301,6 @@ function xferChannelList(list) {
     return out;
 }
 
-// ✅ استخراج الإعدادات الموحدة من أي شكل
 function xferUnified(obj) {
     if (!obj || typeof obj !== 'object') return null;
     var src = _xPick(obj, ['unified', 'unifiedSettings', 'unified_settings', 'unifiedConfig', 'settings', 'general', 'common', 'defaults']);
@@ -2485,8 +2338,6 @@ function xferUnified(obj) {
     return u;
 }
 
-// ✅ قراءة الإعدادات العامة (الرسائل/السرعة/التكرار …) من أي كائن — تُستخدم كإعدادات افتراضية للقنوات
-//    تدعم الأكواد القديمة التي كانت تحفظ هذه الإعدادات على مستوى الحساب أو على مستوى الجذر
 function xferDefaultsFrom(obj) {
     if (!obj || typeof obj !== 'object') return null;
     var d = {
@@ -2509,7 +2360,6 @@ function xferDefaultsFrom(obj) {
     return has ? d : null;
 }
 
-// ✅ توحيد التوكن (إزالة Bearer والاقتباسات)
 function normalizeToken(t) {
     if (t === undefined || t === null) return '';
     var s = String(t).trim();
@@ -2519,12 +2369,10 @@ function normalizeToken(t) {
     return s;
 }
 
-// ✅ توحيد الكود بالكامل إلى بنية الموقع (bots + counter + الإعدادات العامة …)
 function normalizeTransferPayload(data) {
     var out = { bots: [], counter: null, sendToNonLive: null, exemptChannels: [], bestProxy: null, interBotDelay: null, globalUnified: null, defaults: null };
     if (!data || typeof data !== 'object') return out;
 
-    // ✅ فك أي تغليف إضافي: {data:…} / {payload:…} / {backup:…} …
     var core = data;
     var wrapKeys = ['data', 'payload', 'backup', 'state', 'transfer', 'result', 'value'];
     for (var wi = 0; wi < wrapKeys.length; wi++) {
@@ -2533,16 +2381,13 @@ function normalizeTransferPayload(data) {
     }
     if (Array.isArray(core)) core = { accounts: core };
 
-    // ✅ الإعدادات العامة على مستوى الكود (تُطبّق على أي قناة ناقصة الإعدادات)
     var g = xferDefaultsFrom(core) || {};
     out.defaults = g;
 
-    // ✅ القنوات العامة (تُستخدم لأي حساب بلا قنوات)
     var gChannels = [];
     var gList = _xPick(core, ['channels', 'channelList', 'channel_list', 'targets', 'streamers', 'recipients', 'chatrooms', 'rooms']);
     if (gList) gChannels = xferChannelList(gList);
 
-    // ✅ قائمة الحسابات/البوتات (مصفوفة أو خريطة)
     var list = _xPick(core, ['bots', 'accounts', 'users', 'profiles', 'botList', 'bot_list', 'accountList', 'account_list']);
     var arr = [];
     if (Array.isArray(list)) arr = list;
@@ -2558,7 +2403,7 @@ function normalizeTransferPayload(data) {
             }
         }
     } else if (core && (core.token || core.access_token)) {
-        arr = [core]; // ✅ كود لحساب واحد فقط
+        arr = [core];
     }
 
     var globalUnified = xferUnified(core);
@@ -2581,7 +2426,6 @@ function normalizeTransferPayload(data) {
         var wpv = _xNumOrNull(_xPick(a, ['workingProxy', 'working_proxy', 'proxy', 'proxyIndex', 'proxy_index']));
         bot.workingProxy = (wpv !== null && wpv >= 0) ? Math.round(wpv) : -1;
 
-        // ✅ قنوات الحساب: channels / streamers / targets / قناة مفردة
         var chs = [];
         var aList = _xPick(a, ['channels', 'streamers', 'targets', 'channelList', 'channel_list', 'recipients', 'chatrooms', 'rooms', 'subs', 'subscriptions']);
         if (aList) chs = xferChannelList(aList);
@@ -2594,13 +2438,11 @@ function normalizeTransferPayload(data) {
         }
         if (chs.length === 0 && gChannels.length) chs = gChannels.slice();
         bot.channels = chs;
-        // ✅ إعدادات افتراضية خاصة بهذا الحساب (تعمل مع الأكواد القديمة التي تحفظ الرسائل على مستوى الحساب)
         bot.defaults = xferDefaultsFrom(a) || null;
         bot.unified = xferUnified(a) || globalUnified || null;
         out.bots.push(bot);
     }
 
-    // ✅ العدّاد والحالات العامة
     var cnt = _xNumOrNull(_xPick(core, ['counter', '_counter', 'nextId', 'next_id', 'accIdCounter', 'idCounter']));
     out.counter = (cnt !== null && cnt >= 0) ? Math.floor(cnt) : null;
     out.sendToNonLive = _xBoolOrNull(_xPick(core, ['sendToNonLive', 'send_to_non_live', 'sendNonLive', 'nonLive', 'sendToOffline']));
@@ -2614,7 +2456,6 @@ function normalizeTransferPayload(data) {
     return out;
 }
 
-// ✅ بناء قناة نهائية جاهزة للموقع (مع تطبيق الإعدادات العامة على الناقص)
 function xferFinalChannel(ch, g, guard, gBase) {
     ch = ch || {};
     g = g || {};
@@ -2624,7 +2465,6 @@ function xferFinalChannel(ch, g, guard, gBase) {
     if (guard && guard[slug]) return null;
     if (guard) guard[slug] = 1;
     function pick(v, dv) { return (v === null || v === undefined) ? dv : v; }
-    // ✅ دمج إعدادات الحساب فوق إعدادات الكود العامة
     var merged = {};
     for (var mk in gBase) { if (Object.prototype.hasOwnProperty.call(gBase, mk)) merged[mk] = gBase[mk]; }
     for (var nk in g) { if (Object.prototype.hasOwnProperty.call(g, nk) && g[nk] !== null && g[nk] !== '') merged[nk] = g[nk]; }
@@ -2659,7 +2499,6 @@ function xferFinalChannel(ch, g, guard, gBase) {
     };
 }
 
-// ✅ فتح نافذة النقل
 function openTransferModal() {
     $('transferCodeOut').value = '';
     $('transferCodeIn').value = '';
@@ -2670,17 +2509,15 @@ function closeTransferModal() {
     $('transferModal').classList.remove('open');
 }
 
-// ✅ توليد كود النقل من كل بيانات الموقع (نسخة كاملة طبق الأصل لاستبدال الجهاز الآخر بالكامل)
 function generateTransferCode() {
     try {
-        // ✅ تجميع كل شيء: البوتات بنفس ترتيبها + القنوات + الرسائل + سرعة الإرسال + كل الإعدادات العامة
         var data = {
             version: 3,
             timestamp: Date.now(),
-            counter: accIdCounter, // ✅ للحفاظ على تسلسل المعرفات كما هو
+            counter: accIdCounter,
             bots: accounts.map(function(b) {
                 return {
-                    id: b.id, // ✅ نفس المعرف — يحافظ على نفس الترتيب والهوية بالضبط
+                    id: b.id,
                     token: b.token,
                     username: b.username,
                     autoRecover: b.autoRecover,
@@ -2689,8 +2526,8 @@ function generateTransferCode() {
                     channels: b.channels.map(function(ch) {
                         return {
                             slug: ch.slug,
-                            messages: ch.messages || '',       // ✅ الرسائل
-                            interval: ch.interval,              // ✅ سرعة الإرسال (الفاصل الزمني)
+                            messages: ch.messages || '',
+                            interval: ch.interval,
                             repeat: ch.repeat,
                             isInfinite: ch.isInfinite,
                             enabled: ch.enabled !== false,
@@ -2707,21 +2544,16 @@ function generateTransferCode() {
                         };
                     }),
                     workingProxy: b.workingProxy != null ? b.workingProxy : -1,
-                    // ✅ الإعدادات الموحدة الخاصة بهذا الحساب فقط
                     unified: getBotUnified(b)
                 };
             }),
-            // ✅ حالة الإرسال لغير المباشر (كل القنوات وليس فقط البث المباشر)
             sendToNonLive: sendToNonLive,
-            // ✅ قنوات الاستثناء (إرسال دائم في كل الحالات)
             exemptChannels: exemptChannels.slice(),
-            // ✅ أفضل بروكسي محفوظ
             bestProxy: _bestProxy
         };
 
         var json = JSON.stringify(data);
         var b64 = utf8ToBase64(json);
-        // ✅ إضافة بادئة للتمييز
         var code = 'RK1-' + b64;
         $('transferCodeOut').value = code;
         toast('تم توليد الكود (' + data.bots.length + ' بوت) — كود استبدال كامل', 's');
@@ -2730,7 +2562,6 @@ function generateTransferCode() {
     }
 }
 
-// ✅ نسخ كود النقل
 function copyTransferCode() {
     var code = $('transferCodeOut').value.trim();
     if (!code) {
@@ -2745,7 +2576,6 @@ function copyTransferCode() {
             navigator.clipboard.writeText(code).then(function() {
                 toast('تم نسخ الكود', 's');
             }).catch(function() {
-                // ✅ fallback
                 document.execCommand('copy');
                 toast('تم نسخ الكود', 's');
             });
@@ -2758,7 +2588,6 @@ function copyTransferCode() {
     }
 }
 
-// ✅ تصدير كود النقل كملف txt وتحميله على الجهاز
 function exportTransferCodeToFile() {
     var code = $('transferCodeOut').value.trim();
     if (!code) {
@@ -2766,12 +2595,11 @@ function exportTransferCodeToFile() {
         return;
     }
     try {
-        // ✅ BOM (\ufeff) يخلي كروم يقرأ الملف UTF-8 ويعرض العربية صح
         var blob = new Blob(['\ufeff' + code], { type: 'text/plain;charset=utf-8' });
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         a.href = url;
-        a.download = 'RedKick_files-transfer-' + Date.now() + '.txt';
+        a.download = 'ملف نقل بيانات القائمة-' + Date.now() + '.json';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -2782,12 +2610,10 @@ function exportTransferCodeToFile() {
     }
 }
 
-// ✅ اختيار ملف يحتوي كود النقل (txt/json/أي ملف نصي) ووضعه في مربع النص
 function handleTransferFileChoose(event) {
     var file = event.target.files && event.target.files[0];
     if (!file) return;
 
-    // ✅ حد أعلى للأمان فقط (8 ميجابايت) — يُقبل أي ملف نصي وليس txt فقط
     if (file.size > 8 * 1024 * 1024) {
         toast('الملف كبير جداً — الحد 8 ميجابايت', 'e');
         event.target.value = '';
@@ -2801,7 +2627,6 @@ function handleTransferFileChoose(event) {
             toast('الملف فارغ', 'e');
             return;
         }
-        // ✅ استعادة مباشرة من الملف بدون نسخ الكود في مربع النص
         importTransferCode(content);
     };
     reader.onerror = function() {
@@ -2809,13 +2634,9 @@ function handleTransferFileChoose(event) {
     };
     reader.readAsText(file, 'UTF-8');
 
-    // إعادة تصفير حقل الملف للسماح باختيار نفس الملف مرة أخرى لاحقاً
     event.target.value = '';
 }
 
-// ✅ استيراد كود النقل — استبدال كامل: يمسح كل بيانات هذا الجهاز ويستعيد بيانات الكود بالكامل
-//    ✅ يقبل أكواد هذا الموقع (RK1-…) وأي كود مشابه (بادئة أخرى أو بدون بادئة، base64 عادي أو URL-safe، JSON مباشر)
-//    ✅ يقبل البُنى: bots / accounts / users / targets / channels / interBotDelay … إلخ
 function importTransferCode(codeFromFile) {
     var code = (typeof codeFromFile === 'string' ? codeFromFile : $('transferCodeIn').value).replace(/^\s+/, '');
     if (!code.trim()) {
@@ -2823,27 +2644,23 @@ function importTransferCode(codeFromFile) {
         return;
     }
 
-    // ✅ فك الكود بمحرّك القراءة المتسامح
     var dec = decodeTransferPayload(code);
     if (!dec.ok) {
         toast(dec.error || 'كود تالف أو غير مكتمل — تأكد من نسخ الكود كاملاً', 'e');
         return;
     }
 
-    // ✅ توحيد البنية (يدعم كل الأكواد المشابهة)
     var norm = normalizeTransferPayload(dec.data);
 
     var existingCount = accounts.length;
     var newBotsCount = norm.bots.length;
 
-    // ✅ تحذير واضح — استبدال كامل
     var confirmMsg = '⚠ استبدال كامل للبيانات\n\n' +
         'سيتم حذف كل بيانات هذا الجهاز (' + existingCount + ' بوت وكل الإعدادات) نهائياً،\n' +
         'واستبدالها ببيانات الكود بالكامل (' + newBotsCount + ' بوت بنفس الترتيب والقنوات والرسائل وسرعة الإرسال وكل الإعدادات).\n\n' +
         'لا يمكن التراجع بعد الاستبدال. هل أنت متأكد؟';
     if (!confirm(confirmMsg)) return;
 
-    // ✅ إيقاف أي بوتات تعمل حالياً على هذا الجهاز قبل المسح
     for (var si = 0; si < accounts.length; si++) {
         accounts[si].isSending = false;
     }
@@ -2853,7 +2670,6 @@ function importTransferCode(codeFromFile) {
         if (typeof _botStartTimer !== 'undefined' && _botStartTimer) { clearTimeout(_botStartTimer); _botStartTimer = null; }
     } catch(e) {}
 
-    // ✅ مسح كل البيانات الحالية بالكامل
     accounts = [];
     selectedBots = {};
 
@@ -2861,14 +2677,12 @@ function importTransferCode(codeFromFile) {
     var maxId = 0;
     var seenTokens = {};
 
-    // ✅ استعادة البوتات بنفس الترتيب تماماً كما في الكود
     for (var bi = 0; bi < norm.bots.length; bi++) {
         var b = norm.bots[bi];
         if (!b || !b.token) continue;
-        if (seenTokens[b.token]) continue; // ✅ تجاهل التوكن المكرر
+        if (seenTokens[b.token]) continue;
         seenTokens[b.token] = 1;
 
-        // ✅ بناء القنوات (نفس الرسائل وسرعة الإرسال وكل الخصائص)
         var channels = [];
         var guard = {};
         for (var ci = 0; ci < b.channels.length; ci++) {
@@ -2876,7 +2690,6 @@ function importTransferCode(codeFromFile) {
             if (fc) channels.push(fc);
         }
 
-        // ✅ نحافظ على نفس المعرف الأصلي (نفس الترتيب والهوية بالضبط) — ومع الحماية من التكرار
         var botId = (typeof b.id === 'number' && b.id > 0) ? Math.floor(b.id) : (importedCount + 1);
         if (findBot(botId)) {
             botId = 0;
@@ -2896,7 +2709,6 @@ function importTransferCode(codeFromFile) {
             sent: 0,
             workingProxy: (typeof b.workingProxy === 'number' && b.workingProxy >= 0) ? b.workingProxy : -1,
             workingSendProxy: -1,
-            // ✅ الإعدادات الموحدة الخاصة بهذا الحساب (أو من الكود القديم العام، وإلا الافتراضية)
             unified: b.unified ? {
                 enabled: !!b.unified.enabled,
                 messages: b.unified.messages || '',
@@ -2918,7 +2730,6 @@ function importTransferCode(codeFromFile) {
         importedCount++;
     }
 
-    // ✅ استعادة عدّاد المعرفات — لضمان عدم تعارض أي بوت جديد يُضاف لاحقاً
     if (typeof norm.counter === 'number' && norm.counter >= 0) {
         accIdCounter = norm.counter;
     } else {
@@ -2926,14 +2737,12 @@ function importTransferCode(codeFromFile) {
     }
     if (accIdCounter < maxId) accIdCounter = maxId;
 
-    // ✅ استعادة حالة الإرسال لغير المباشر
     if (typeof norm.sendToNonLive === 'boolean') {
         sendToNonLive = norm.sendToNonLive;
         saveSendToNonLive();
         setToggle('tgSendNonLive', sendToNonLive);
     }
 
-    // ✅ استعادة قنوات الاستثناء (إرسال دائم في كل الحالات)
     if (Array.isArray(norm.exemptChannels) && norm.exemptChannels.length) {
         exemptChannels = norm.exemptChannels.map(normSlug).filter(Boolean);
         saveExemptChannels();
@@ -2941,29 +2750,24 @@ function importTransferCode(codeFromFile) {
         if (typeof renderExemptList === 'function') renderExemptList();
     }
 
-    // ✅ استعادة أفضل بروكسي محفوظ
     if (typeof norm.bestProxy === 'number' && norm.bestProxy >= 0) {
         _bestProxy = norm.bestProxy;
         saveBestProxy();
     }
 
-    // ✅ استعادة تأخير التشغيل بين البوتات (interBotDelay) إن وُجد في الكود
     if (typeof norm.interBotDelay === 'number' && norm.interBotDelay >= 0) {
         _interBotDelay = norm.interBotDelay;
         saveInterBotDelay();
     }
 
-    // ✅ مسح أي حالة تشغيل قديمة كانت على هذا الجهاز (غير صالحة بعد الاستبدال)
     clearRunningState();
 
-    // ✅ حفظ وإعادة عرض كل شيء
     persist();
     renderBotList();
     if (typeof updateBulkUI === 'function') updateBulkUI();
     forceUIUpdate();
     closeTransferModal();
 
-    // ✅ السماح بتشغيل جديد بعد الإيقاف الإجباري
     setTimeout(function() { if (typeof _forceStopAll !== 'undefined') _forceStopAll = false; }, 500);
 
     if (importedCount > 0) {
@@ -3019,7 +2823,6 @@ function uToggleRandomMessages() {
     setToggle('uTgRandomMessages', u.randomMessages);
 }
 
-// ✅ رسالتين معاً في الإعدادات الموحدة
 function uToggleTwoMessages() {
     if (activeModalBotId === null) return;
     var b = findBot(activeModalBotId);
@@ -3029,7 +2832,6 @@ function uToggleTwoMessages() {
     setToggle('uTgTwoMessages', u.twoMessages);
 }
 
-// ✅ وضع رسائلي السرّية في الإعدادات الموحدة — الرسائل تُجلب من نفس مسار emote.json
 function uToggleStickersOnly() {
     if (activeModalBotId === null) return;
     var b = findBot(activeModalBotId);
@@ -3049,7 +2851,6 @@ function uToggleStickersOnly() {
 }
 
 
-// ✅ تعليقات للاستريمر تمساح — بدون كلمة سر
 var TAMSAH_STREAMER_COMMENTS = [
 'يا تمساح البث النهارده فوق الوصف 🔥',
 'أداؤك بيخلي الواحد مركز مع كل ثانية 😎',
@@ -3400,7 +3201,6 @@ function uToggleStreamerComments() {
     u.streamerComments = !u.streamerComments;
     setToggle('uTgStreamerComments', u.streamerComments);
     if (u.streamerComments) {
-        // الوضع الجديد يستبدل محتوى الرسائل تلقائياً ولا يطلب كلمة سر.
         $('uMessages').value = TAMSAH_STREAMER_COMMENTS.join('\n');
         $('uMessages').readOnly = true;
     } else {
@@ -3408,7 +3208,6 @@ function uToggleStreamerComments() {
     }
 }
 
-// ✅ قائمة استثناء القنوات داخل نافذة الإعدادات الموحدة — قنوات هذا الحساب فقط
 function renderUnifiedExcludedList() {
     var box = document.getElementById('uExcludedList');
     if (!box) return;
@@ -3496,7 +3295,6 @@ function saveUnifiedSettings() {
     u.twoMessages = $('uTgTwoMessages').classList.contains('on');
     var rv = parseInt($('uRepeat').value) || 1;
     u.repeat = u.isInfinite ? 0 : Math.max(1, rv);
-    // ✅ الحفظ: عند التفعيل تُمسح إعدادات القنوات غير المستثناة وتُكتب عليها الإعدادات الموحدة
     var finishSave = function (stickersText) {
         var applied = u.enabled ? applyUnifiedToChannels(b, u, stickersText) : 0;
         persist();
@@ -3508,7 +3306,6 @@ function saveUnifiedSettings() {
         if (activeModalBotId !== null) { var bb = findBot(activeModalBotId); if (bb) renderChannelsList(bb); }
     };
     if (u.enabled && u.stickersOnly) {
-        // ✅ نفس مسار emote.json عبر ensureStickersList
         ensureStickersList().then(function (list) {
             if (!list) toast('تعذر تحميل رسائل stickersonly — تأكد من رفع emote.json واستبدال YOUR_USERNAME/YOUR_REPO في الرابط', 'e');
             finishSave(list || '');
@@ -3518,14 +3315,10 @@ function saveUnifiedSettings() {
     }
 }
 
-// ═══════════════════════════════════════
-//  ✅ الإرسال المباشر (Quick Send)
-// ═══════════════════════════════════════
-var qsSelectedBots = {};   // { botId: true }
-var qsSelectedChannels = {}; // { botId: { slug: true } }
-// ✅ وضع الإعدادات المنفصلة + رسائل منفصلة لكل بوت
+var qsSelectedBots = {};
+var qsSelectedChannels = {};
 var qsSeparateMode = false;
-var qsSeparateMessages = {}; // { botId: 'message' }
+var qsSeparateMessages = {};
 
 function openQuickSend() {
     qsSelectedBots = {};
@@ -3534,8 +3327,6 @@ function openQuickSend() {
     $('qsMessage').value = '';
     renderQsBotList();
     updateQsSendButton();
-    // ✅ لا تنادي renderQsSeparateList هنا لأنها بتحدد كل البوتات تلقائياً (qsSelectedBots)
-    // وده كان بيخلي كل الحسابات تظهر محددة في القائمة العادية بمجرد فتح المودال
     if (qsSeparateMode) renderQsSeparateList();
     $('quickSendModal').classList.add('open');
 }
@@ -3544,7 +3335,6 @@ function closeQuickSend() {
     $('quickSendModal').classList.remove('open');
 }
 
-// ✅ تبديل وضع الإعدادات المنفصلة
 function toggleQsSeparateMode() {
     qsSeparateMode = !qsSeparateMode;
     var tg = $('tgQsSeparate');
@@ -3555,7 +3345,6 @@ function toggleQsSeparateMode() {
     if (qsSeparateMode) renderQsSeparateList();
 }
 
-// ✅ عرض قائمة البوتات في الوضع المنفصل — لكل بوت رسالة + زر إرسال
 function renderQsSeparateList() {
     var box = $('qsSeparateList');
     if (!box) return;
@@ -3571,10 +3360,8 @@ function renderQsSeparateList() {
         if (qsSelectedChannels[b.id]) {
             for (var s in qsSelectedChannels[b.id]) { if (qsSelectedChannels[b.id][s]) selChCount++; }
         }
-        // ✅ تأكد من تحديد البوت في الوضع المنفصل
         if (!qsSelectedBots[b.id] && chCount > 0) {
             qsSelectedBots[b.id] = true;
-            // ✅ حدّد كل القنوات افتراضياً
             if (!qsSelectedChannels[b.id]) {
                 qsSelectedChannels[b.id] = {};
                 for (var c = 0; c < b.channels.length; c++) {
@@ -3603,12 +3390,10 @@ function renderQsSeparateList() {
     box.innerHTML = html;
 }
 
-// ✅ حفظ رسالة بوت معيّن في الوضع المنفصل
 function saveQsSeparateMessage(botId, msg) {
     qsSeparateMessages[botId] = msg;
 }
 
-// ✅ إرسال رسالة لبوت واحد (في الوضع المنفصل) — يدعم السبام
 async function quickSendSingleBot(botId) {
     var b = findBot(botId);
     if (!b) return;
@@ -3619,7 +3404,6 @@ async function quickSendSingleBot(botId) {
 
     var selChannels = qsSelectedChannels[botId];
     if (!selChannels) {
-        // ✅ إذا لم تحدد قنوات، استخدم كل القنوات المفعّلة
         selChannels = {};
         for (var c = 0; c < b.channels.length; c++) {
             if (b.channels[c].enabled !== false) {
@@ -3641,7 +3425,6 @@ async function quickSendSingleBot(botId) {
         return;
     }
 
-    // ✅ السبام: لا نعطّل الزر — نغيّر لونه فقط للإشارة للإرسال
     var btn = $('qsSepBtn_' + botId);
     if (btn) {
         btn.classList.add('sending');
@@ -3676,7 +3459,6 @@ async function quickSendSingleBot(botId) {
         }
     }
 
-    // ✅ إعادة الزر لحالته الطبيعية — السبام متاح
     if (btn) {
         btn.classList.remove('sending');
         btn.innerHTML = '<i class="fas fa-paper-plane"></i><span>إرسال</span>';
@@ -3708,7 +3490,6 @@ function qsToggleChannel(botId, slug) {
     else qsSelectedChannels[botId][slug] = true;
     renderQsChannelList();
     updateQsSendButton();
-    // ✅ حدّث القائمة المنفصلة لعرض عدّاد القنوات المحددة
     if (qsSeparateMode) renderQsSeparateList();
 }
 
@@ -3809,7 +3590,6 @@ async function quickSendMessage() {
             if (!selChannels[slug]) continue;
             var ch = findChannel(b, slug);
             if (!ch) continue;
-            // ✅ استخدم chatroom_id المحفوظ أو اجلبه الآن
             tasks.push({ bot: b, channel: ch, slug: slug });
         }
     }
@@ -3819,10 +3599,9 @@ async function quickSendMessage() {
         return;
     }
 
-    // ✅ السبام: لا نعطّل الزر — نغيّر لونه فقط للإشارة للإرسال
     var btn = $('qsSendBtn');
     var wasDisabled = btn.disabled;
-    btn.disabled = false; // ✅ ابقِ الزر متاحاً للسبام
+    btn.disabled = false;
     var originalHtml = '<i class="fas fa-paper-plane"></i> إرسال';
     btn.innerHTML = '<span class="spinner-sm"></span> إرسال...';
 
@@ -3831,7 +3610,6 @@ async function quickSendMessage() {
         var task = tasks[i];
         var cid = task.channel.chatroomId;
         if (!cid || !task.channel.verified) {
-            // اجلب chatroom_id الآن
             try {
                 var chData = await fetchChannel(task.slug, task.bot);
                 cid = extractChatroomId(chData);
@@ -3855,19 +3633,16 @@ async function quickSendMessage() {
         }
     }
 
-    // ✅ إعادة الزر لحالته — السبام متاح للضغط مجدداً
     btn.innerHTML = originalHtml;
 
     if (sent > 0) {
         toast('✓ تم إرسال الرسالة إلى ' + sent + ' قناة' + (failed > 0 ? ' (فشل في ' + failed + ')' : ''), 's');
-        // ✅ لا نمسح الرسالة — للسماح بالسبام بالضغط المتكرر
     } else {
         toast('✗ فشل الإرسال إلى جميع القنوات', 'e');
     }
     updateQsSendButton();
 }
 
-// حفظ في localStorage
 function persist() {
     try {
         var data = {
@@ -3898,8 +3673,8 @@ function persist() {
                     autoRecover: b.autoRecover,
                     parallel: b.parallel,
                     selected: !!selectedBots[b.id],
-                    workingProxy: b.workingProxy != null ? b.workingProxy : -1, // ✅ حفظ البروكسي الشغال
-                    unified: getBotUnified(b) // ✅ الإعدادات الموحدة الخاصة بهذا الحساب فقط
+                    workingProxy: b.workingProxy != null ? b.workingProxy : -1,
+                    unified: getBotUnified(b)
                 };
             })
         };
@@ -3907,7 +3682,6 @@ function persist() {
     } catch(e) { console.warn('Save failed', e); }
 }
 
-// تحميل من localStorage
 function loadFromStorage() {
     try {
         var raw = localStorage.getItem(STORAGE_KEY);
@@ -3919,7 +3693,6 @@ function loadFromStorage() {
         accIdCounter = data.counter || 0;
         for (var i = 0; i < data.bots.length; i++) {
             var b = data.bots[i];
-            // توافق مع النسخة القديمة: streamers → channels
             var channels = [];
             if (b.channels) {
                 for (var c = 0; c < b.channels.length; c++) {
@@ -3945,7 +3718,6 @@ function loadFromStorage() {
                     });
                 }
             } else if (b.streamers) {
-                // ترحيل البيانات القديمة
                 for (var s = 0; s < b.streamers.length; s++) {
                     channels.push({
                         slug: b.streamers[s],
@@ -3966,14 +3738,11 @@ function loadFromStorage() {
             var bot = {
                 id: b.id, token: b.token, username: b.username,
                 channels: channels,
-                // ✅ مفعّلان دائماً (مخفيان عن الواجهة)
                 autoRecover: true,
                 parallel: true,
                 isSending: false, sent: 0,
-                // ✅ استعادة البروكسي الشغال من الجلسة السابقة (إن وُجد)
                 workingProxy: (typeof b.workingProxy === 'number' && b.workingProxy >= 0) ? b.workingProxy : -1,
                 workingSendProxy: -1,
-                // ✅ استعادة الإعدادات الموحدة الخاصة بهذا الحساب فقط
                 unified: b.unified ? {
                     enabled: !!b.unified.enabled,
                     messages: b.unified.messages || '',
@@ -3989,17 +3758,12 @@ function loadFromStorage() {
                     excludedChannels: Array.isArray(b.unified.excludedChannels) ? b.unified.excludedChannels.map(normSlug).filter(Boolean) : []
                 } : defaultUnified()
             };
-            // ✅ لا نستعيد حالة التحديد بعد إعادة الدخول للموقع — التحديد يبدأ دائماً فارغاً
             accounts.push(bot);
         }
     } catch(e) { console.warn('Load failed', e); }
 }
 
-// ═══════════════════════════════════════
-//  ✅ نظام أصوات فوري — استجابة سريعة بدون تأخير
-// ═══════════════════════════════════════
 
-// ✅ AudioContext واحد مشترك — لا ننشئ واحداً جديداً في كل مرة (سريع جداً)
 var _sfxCtx = null;
 var _sfxReady = false;
 function _getSfxCtx() {
@@ -4011,20 +3775,18 @@ function _getSfxCtx() {
             _sfxReady = true;
         } catch(e) { return null; }
     }
-    // ✅ استئناف الـ context إن كان معلّقاً (سياسة المتصفح)
     if (_sfxCtx.state === 'suspended') {
         try { _sfxCtx.resume(); } catch(e) {}
     }
     return _sfxCtx;
 }
 
-// ✅ دالة عامة لتشغيل أي نغمة — فورية جداً
 function _playTone(freq, duration, type, volume) {
-    return; // ✅ تم إلغاء كل أصوات التطبيق بطلب المستخدم
+    return;
     var ctx = _getSfxCtx();
     if (!ctx) return;
     try {
-        var now = ctx.currentTime; // فوري
+        var now = ctx.currentTime;
         var osc = ctx.createOscillator();
         var gain = ctx.createGain();
         osc.type = type || 'sine';
@@ -4039,15 +3801,12 @@ function _playTone(freq, duration, type, volume) {
     } catch(e) {}
 }
 
-// ✅ صوت النقر — قصير جداً وحاد (5 أجزاء من الثانية)
 function playClickSound() {
     _playTone(880, 0.05, 'sine', 0.06);
 }
-// ✅ صوت النقر الخفيف — أهدأ
 function playClickSoft() {
     _playTone(660, 0.04, 'sine', 0.04);
 }
-// ✅ صوت التبديل (toggle on) — نغمة عالية
 function playToggleSound(on) {
     if (on) {
         _playTone(880, 0.06, 'square', 0.05);
@@ -4056,17 +3815,14 @@ function playToggleSound(on) {
         _playTone(440, 0.08, 'square', 0.05);
     }
 }
-// ✅ صوت النجاح — نغمتان صاعدتان سريعتان
 function playSuccessSound() {
     _playTone(660, 0.08, 'triangle', 0.07);
     setTimeout(function(){ _playTone(990, 0.1, 'triangle', 0.06); }, 60);
 }
-// ✅ صوت الخطأ — نغمة هابطة
 function playErrorSound() {
     _playTone(330, 0.1, 'sawtooth', 0.06);
     setTimeout(function(){ _playTone(220, 0.12, 'sawtooth', 0.05); }, 80);
 }
-// ✅ صوت فتح/إغلاق نافذة
 function playModalSound(open) {
     if (open) {
         _playTone(523, 0.06, 'sine', 0.05);
@@ -4077,8 +3833,6 @@ function playModalSound(open) {
     }
 }
 
-// ✅ تفعيل AudioContext عند أول تفاعل (سياسة المتصفح) — بدون تشغيل صوت النقر العام
-// ملاحظة: تم إلغاء صوت النقر العام على كل الأزرار، الصوت الآن فقط عند تحديد/إلغاء تحديد حساب
 document.addEventListener('pointerdown', function() {
     _getSfxCtx();
 }, { once: true });
@@ -4087,16 +3841,12 @@ document.addEventListener('keydown', function() {
     _getSfxCtx();
 }, { once: true });
 
-// ═══════════════════════════════════════
-//  واجهة المستخدم
-// ═══════════════════════════════════════
 function showPhase(name) {
     document.querySelectorAll('.phase').forEach(function(p){ p.classList.remove('active'); });
     $('ph-'+name).classList.add('active');
 }
 
 function toast(msg, type) {
-    /* ⛔ تم تعطيل الرسائل العلوية بالكامل (بناءً على طلب المستخدم) — لا تعرض أي شيء */
     return;
 }
 
@@ -4106,27 +3856,12 @@ function escH(s) {
     return d.innerHTML;
 }
 
-// ═══════════════════════════════════════
-//  التحقق من التوكن وإضافة بوت
-// ═══════════════════════════════════════
 
-// ═══════════════════════════════════════
-// ✅ فحص حالة جميع التوكنات
-// ═══════════════════════════════════════
 function openTokenCheck(){var modal=$('tokenCheckModal'),content=$('tokenCheckContent');if(!modal||!content)return;modal.classList.add('open');content.innerHTML='<div class="token-check-loading"><div class="spinner"></div>جاري فحص الحسابات...</div>';runTokenCheck()}
 function closeTokenCheck(){var modal=$('tokenCheckModal');if(modal)modal.classList.remove('open')}
 
-/* ============================================================
- * ✅ فحص حالة التوكنات (نسخة v2 مُصحّحة ومحسّنة)
- *  - تصنيف دقيق ثلاثي: يعمل / منتهي / تعذّر الفحص (مع إعادة محاولة تلقائية).
- *  - "يعمل": فقط عند تأكيد وجود بيانات مستخدم حقيقية (username) مرتبطة بالتوكن.
- *  - "منتهي": أي 401/403 أو رسالة عدم مصادقة صريحة من بروكسي موثوق، مع عدم وجود أي استجابة ناجحة.
- *  - تشغيل محدود التزامن (Concurrency) لمنع حظر البروكسيات المجانية وحلّ مشكلة "فحص 10 فقط".
- *  - إعادة محاولة تلقائية للحسابات التي تعذّر فحصها في جولة ثانية أبطأ حتى تُفحَص كل الحسابات.
- * ============================================================ */
 function _sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
-// ✅ مشغّل مهام محدود التزامن: يمنع إغراق البروكسيات بالطلبات المتزامنة
 async function _runLimited(items, limit, worker){
     var results = new Array(items.length);
     var idx = 0;
@@ -4144,10 +3879,8 @@ async function _runLimited(items, limit, worker){
     return results;
 }
 
-// ✅ البروكسيات الموثوقة في تمرير ترويسة Authorization (لتفادي الخطأ في تصنيف التوكن)
 var _AUTH_PROXIES = ['codetabs','corsproxy.org'];
 
-// ✅ طلب مباشر عبر بروكسي محدّد مع تمرير ترويسة المصادقة
 async function _rawProxied(path, token, pIdx, timeout){
     var headers = { 'Accept':'application/json', 'Origin':KICK_BASE };
     if (token) headers['Authorization'] = 'Bearer ' + token;
@@ -4182,7 +3915,6 @@ async function checkSingleTokenStatus(bot){
                 var res = await _rawProxied(endpoints[ei] + cacheBust, token, p, 12000);
                 sawAnyResponse = true;
 
-                // ✅ 401/403 = رفض مصادقة (منتهي) — نثق بها فقط من بروكسي يمرّر الترويسة
                 if (res.status === 401 || res.status === 403){
                     if (isTrustedAuth) sawTrustedAuthFail = true;
                     continue;
@@ -4194,7 +3926,6 @@ async function checkSingleTokenStatus(bot){
                 var lower = String(raw || '').toLowerCase();
                 var hasUser = /"username"\s*:/.test(lower);
 
-                // ✅ بعض البروكسيات تُعيد 200 حتى مع خطأ مصادقة — نفحص المحتوى يدوياً
                 if (!hasUser && /(unauthenticated|unauthorized|invalid token|invalid_token|token has expired|expired token|"token"\s*:\s*\[\s*\])/.test(lower)){
                     if (isTrustedAuth) sawTrustedAuthFail = true;
                     continue;
@@ -4212,7 +3943,6 @@ async function checkSingleTokenStatus(bot){
                     }
                 }
 
-                // ✅ استخراج كائن المستخدم من الاستجابة
                 var src = data;
                 if (data){
                     if (data.user && typeof data.user === 'object') src = data.user;
@@ -4220,16 +3950,13 @@ async function checkSingleTokenStatus(bot){
                 }
                 var username = (src && (src.username || src.slug || src.name)) || null;
 
-                // ✅ أي استجابة ناجحة تحمل اسم مستخدم حقيقي = التوكن يعمل → نتوقف فوراً
                 if (username) return { status:'active', username:username, proxy:p };
             } catch(e){ lastErr = String(e && e.message || e); continue; }
         }
     }
 
-    // ✅ رفض مصادقة صريح من بروكسي موثوق = التوكن منتهي
     if (sawTrustedAuthFail) return { status:'expired', username:fallbackName };
 
-    // ✅ استجاب الخادم لكن دون تأكيد بيانات مستخدم (احتمال حجب أو بيانات زائر)
     if (sawAnyResponse) return { status:'unknown', error:'استجابة بدون بيانات مستخدم' };
 
     return { status:'unknown', error:lastErr || 'فشل الاتصال — تحقق من الإنترنت' };
@@ -4246,10 +3973,8 @@ async function runTokenCheck(){
 
     content.innerHTML = '<div class="token-check-loading"><div class="spinner"></div>جاري فحص ' + list.length + ' حساب...</div>';
 
-    // ✅ تشغيل محدود التزامن (5 حسابات في وقت واحد) — يمنع حظر البروكسيات ويضمن فحص كل الحسابات
     var results = await _runLimited(list, 5, function(bot){ return checkSingleTokenStatus(bot); });
 
-    // ✅ إعادة محاولة تلقائية للحسابات التي تعذّر فحصها (جولة ثانية أبطأ واحداً تلو الآخر)
     var retryIdx = [];
     for (var i = 0; i < results.length; i++){ if (results[i] && results[i].status === 'unknown') retryIdx.push(i); }
     for (var r = 0; r < retryIdx.length; r++){
@@ -4273,7 +3998,6 @@ async function runTokenCheck(){
     html += '<div class="token-stat expired"><div class="ts-icon"><i class="fas fa-triangle-exclamation"></i></div><div class="ts-num">' + expired.length + '</div><div class="ts-label">توكن منتهي</div></div>';
     html += '<div class="token-stat active"><div class="ts-icon"><i class="fas fa-circle-check"></i></div><div class="ts-num">' + activeCount + '</div><div class="ts-label">توكن يعمل</div></div></div>';
 
-    // ✅ قائمة الحسابات المنتهية (بالأسماء)
     html += '<div class="token-check-section-title"><i class="fas fa-user-xmark"></i><span>الحسابات التي انتهت توكناتها</span></div>';
     if (expired.length){
         html += '<div class="expired-list">';
@@ -4285,7 +4009,6 @@ async function runTokenCheck(){
         html += '<div class="token-empty"><i class="fas fa-shield-check"></i><br>لا يوجد أي حساب بتوكن منتهي.</div>';
     }
 
-    // ✅ قائمة الحسابات الشغّالة (بالأسماء)
     if (activeNames.length){
         html += '<div class="token-check-section-title"><i class="fas fa-user-check"></i><span>الحسابات التي تعمل توكناتها</span></div>';
         html += '<div class="expired-list" style="max-height:150px">';
@@ -4295,7 +4018,6 @@ async function runTokenCheck(){
         html += '</div>';
     }
 
-    // ✅ قائمة الحسابات التي تعذّر فحصها (بالأسماء) — للشفافية
     if (unknownNames.length){
         html += '<div class="token-check-section-title"><i class="fas fa-circle-question"></i><span>حسابات تعذّر التحقق منها</span></div>';
         html += '<div class="expired-list" style="max-height:150px">';
@@ -4315,7 +4037,6 @@ async function verifyAndAdd() {
     if (!token) { toast('أدخل التوكن', 'e'); return; }
     if (token.toLowerCase().startsWith('bearer ')) token = token.substring(7).trim();
 
-    // ✅ التحقق من الحد الأقصى للبوتات
     if (accounts.length >= MAX_BOTS) {
         toast('الحد الأقصى للبوتات هو ' + MAX_BOTS + ' بوت', 'e');
         return;
@@ -4373,40 +4094,30 @@ function goAddToken() {
     showPhase('add');
 }
 
-// ✅ العودة من صفحة إضافة بوت إلى قائمة البوتات
 function navBackFromAdd() {
-    // ✅ إذا يوجد بوتات، ارجع للقائمة الرئيسية
     if (accounts.length > 0) {
         renderBotList();
         showPhase('main');
     } else {
-        // ✅ لا توجد بوتات — ابقَ في صفحة الإضافة لكن أفرغ الحقل
         $('inToken').value = '';
         $('tokenStatus').innerHTML = '';
         toast('أضف بوتاً واحداً على الأقل للبدء', 'i');
     }
 }
 
-// ═══════════════════════════════════════
-//  ✅ نافذة المعلومات الشاملة
-// ═══════════════════════════════════════
 function openInfoModal() {
     $('infoModal').classList.add('open');
 }
 function closeInfoModal() {
     $('infoModal').classList.remove('open');
 }
-// ✅ تبديل بين أقسام المعلومات
 function switchInfoTab(tabName, btnEl) {
-    // ✅ إخفاء كل الأقسام
     var sections = document.querySelectorAll('.info-section');
     for (var i = 0; i < sections.length; i++) {
         sections[i].classList.remove('active');
     }
-    // ✅ إظهار القسم المطلوب
     var target = document.getElementById('info-' + tabName);
     if (target) target.classList.add('active');
-    // ✅ تحديث التبويب النشط
     var tabs = document.querySelectorAll('.info-tab');
     for (var j = 0; j < tabs.length; j++) {
         tabs[j].classList.remove('active');
@@ -4414,9 +4125,6 @@ function switchInfoTab(tabName, btnEl) {
     if (btnEl) btnEl.classList.add('active');
 }
 
-// ═══════════════════════════════════════
-//  ✅ تجديد التوكن — يحل التوكن الجديد محل القديم مع الإبقاء على كل الإعدادات
-// ═══════════════════════════════════════
 var renewTokenBotId = null;
 
 function openRenewToken(id) {
@@ -4424,7 +4132,6 @@ function openRenewToken(id) {
     if (!b) return;
     renewTokenBotId = id;
     $('renewTokenTitle').textContent = 'تجديد التوكن: ' + b.username;
-    // عرض التوكن الحالي داخل نافذة التجديد ليكون جاهزاً للتعديل
     $('renewTokenInput').value = b.token || '';
     $('renewTokenStatus').innerHTML = '';
     $('btnRenewToken').disabled = false;
@@ -4447,7 +4154,6 @@ async function doRenewToken() {
     if (!newToken) { toast('أدخل التوكن الجديد', 'e'); return; }
     if (newToken.toLowerCase().startsWith('bearer ')) newToken = newToken.substring(7).trim();
 
-    // ✅ منع استخدام توكن موجود لبوت آخر
     for (var i = 0; i < accounts.length; i++) {
         if (accounts[i].id !== b.id && accounts[i].token === newToken) {
             toast('هذا التوكن مستخدم لبوت آخر: ' + accounts[i].username, 'e');
@@ -4461,7 +4167,6 @@ async function doRenewToken() {
     $('renewTokenStatus').innerHTML = '<span style="color:var(--muted)"><i class="fas fa-spinner fa-spin"></i> جارٍ التحقق من التوكن...</span>';
 
     try {
-        // ✅ فحص التوكن الجديد تماماً كإضافة بوت جديد
         var pr = null;
         var endpoints = ['/api/v1/user', '/api/v2/user'];
         for (var ei = 0; ei < endpoints.length && (!pr || !pr.res.ok); ei++) {
@@ -4479,7 +4184,6 @@ async function doRenewToken() {
         if (!username && !data.id) throw new Error('لم يتم العثور على بيانات الحساب');
         var displayName = username || ('حساب #' + (data.id || '?'));
 
-        // ✅ إيقاف البوت أولاً إن كان يعمل
         if (b.isSending) {
             b.isSending = false;
             if (abortControllers[b.id]) {
@@ -4488,27 +4192,22 @@ async function doRenewToken() {
             }
         }
 
-        // ✅ حفظ نسخة من الإعدادات القديمة (القنوات + كل التفاصيل)
         var oldChannels = b.channels;
         var oldSent = b.sent;
         var oldSelected = !!selectedBots[b.id];
 
-        // ✅ تحديث التوكن والاسم فقط — مع الإبقاء على كل الإعدادات
         b.token = newToken;
         b.username = displayName;
         b.workingProxy = pr.proxyUsed;
-        // ✅ إعادة ضبط حالة الإرسال
         b.isSending = false;
-        b.sent = oldSent; // ✅ الحفاظ على العداد التراكمي
+        b.sent = oldSent;
         b.workingSendProxy = -1;
 
-        // ✅ إعادة ضبط حالة كل قناة (لإعادة التحقق عند الإرسال إن لزم)
         for (var ci = 0; ci < b.channels.length; ci++) {
             b.channels[ci].status = 'idle';
             b.channels[ci].error = '';
             b.channels[ci].retries = 0;
             b.channels[ci].sent = 0;
-            // ✅ الحفاظ على chatroom_id و verified إن وُجدت
         }
 
         persist();
@@ -4517,7 +4216,6 @@ async function doRenewToken() {
         $('renewTokenStatus').innerHTML = '<span style="color:var(--success)"><i class="fas fa-check-circle"></i> تم تجديد التوكن — ' + escH(displayName) + '</span>';
         toast('تم تجديد التوكن بنجاح — الإعدادات محفوظة', 's');
 
-        // ✅ إغلاق النافذة بعد فترة قصيرة
         setTimeout(function() { closeRenewToken(); }, 1200);
 
     } catch(e) {
@@ -4529,9 +4227,6 @@ async function doRenewToken() {
     }
 }
 
-// ═══════════════════════════════════════
-//  عرض قائمة البوتات
-// ═══════════════════════════════════════
 function renderBotList() {
     var box = $('botList');
     if (accounts.length === 0) {
@@ -4555,7 +4250,6 @@ function renderBotList() {
             statusText = 'جاهز';
             dotClass = 'idle';
         }
-        // ✅ اعرض عدد القنوات المفعّلة فقط
         var sCount = 0;
         for (var _ci = 0; _ci < b.channels.length; _ci++) {
             if (b.channels[_ci].enabled !== false) sCount++;
@@ -4563,14 +4257,11 @@ function renderBotList() {
         var streamerInfo = sCount > 0 ? (sCount + ' قناة مفعّلة') : 'لا قنوات مفعّلة';
 
         html += '<div class="bot-card' + (isSelected ? ' selected' : '') + '">';
-        // مربع التحديد
         html += '<div class="bot-checkbox' + (isSelected ? ' checked' : '') + '" onclick="toggleSelect('+b.id+')" title="تحديد"></div>';
-        // المعلومات
         html += '<div class="bot-info">';
         html += '<div class="bot-name">' + escH(b.username) + '</div>';
         html += '<div class="bot-status"><span class="dot '+dotClass+'"></span> ' + statusText + ' • ' + streamerInfo;
         html += '</div></div>';
-        // الأزرار على اليسار
         html += '<div class="bot-actions">';
         html += '<button class="btn btn-ghost btn-xxs" onclick="openRenewToken('+b.id+')" title="تجديد التوكن">🔑</button>';
         html += '<button class="btn btn-fire btn-xxs" onclick="openSettings('+b.id+')" title="إعدادات"><i class="fas fa-gear"></i></button>';
@@ -4583,7 +4274,6 @@ function renderBotList() {
     updateBulkUI();
 }
 
-// ✅ تثبيت ارتفاع قائمة البوتات على 5 حسابات بالظبط، والباقي يظهر بالسكرول
 function capBotListHeight() {
     var box = $('botList');
     var cards = box.querySelectorAll('.bot-card');
@@ -4598,20 +4288,15 @@ function capBotListHeight() {
 
 window.addEventListener('resize', capBotListHeight);
 
-// ═══════════════════════════════════════
-//  التحديد
-// ═══════════════════════════════════════
 function toggleSelect(id) {
     var newState = !selectedBots[id];
     if (selectedBots[id]) delete selectedBots[id];
     else selectedBots[id] = true;
     playToggleSound(newState);
-    // ✅ لو وضع "التشغيل الجماعي" مفعّل والبوت اتحدد جديد (مش اتشال)، يلتحق بالتشغيل تلقائياً وفوراً
     if (newState && _bulkRunActive) {
         var _joinedBot = findBot(parseInt(id));
         _autoJoinBulkRun(_joinedBot);
     }
-    // ✅ لو البوت اتشال من التحديد وكان شغّال، يوقف فوراً كأنه ضغط إيقاف له لوحده
     if (!newState) {
         var _leftBot = findBot(parseInt(id));
         _stopSingleBot(_leftBot);
@@ -4639,17 +4324,14 @@ function updateBulkUI() {
             count++;
             var b = findBot(parseInt(id));
             if (b && !b.isSending) {
-                // ✅ إذا الإعدادات الموحدة الخاصة بهذا الحساب مفعّلة ولها رسائل — كل قنواته تعتبر جاهزة
                 var bUnified = getBotUnified(b);
                 var unifiedReady = bUnified.enabled && bUnified.messages && bUnified.messages.trim();
                 var hasReady = false;
                 if (unifiedReady) {
-                    // ✅ الإعدادات الموحدة مفعّلة — أي قناة مفعّلة تعتبر جاهزة
                     for (var c = 0; c < b.channels.length; c++) {
                         if (b.channels[c].enabled !== false) { hasReady = true; break; }
                     }
                 } else {
-                    // ✅ الإعدادات الموحدة معطّلة — تحقق من رسائل القناة الخاصة
                     for (var c = 0; c < b.channels.length; c++) {
                         if (b.channels[c].messages && b.channels[c].messages.trim()) { hasReady = true; break; }
                     }
@@ -4674,9 +4356,6 @@ function updateBulkUI() {
     $('btnClearSel').disabled = count === 0;
 }
 
-// ═══════════════════════════════════════
-//  ✅ نافذة تأكيد الحذف العامة
-// ═══════════════════════════════════════
 var _confirmDeleteAction = null;
 
 function askConfirmDelete(message, onYes) {
@@ -4713,16 +4392,12 @@ function removeBot(id) {
     });
 }
 
-// ═══════════════════════════════════════
-//  النافذة المنبثقة لإعدادات البوت
-// ═══════════════════════════════════════
 function openSettings(id) {
     var b = findBot(id);
     if (!b) return;
     activeModalBotId = id;
     $('modalTitle').textContent = 'إعدادات: ' + b.username;
     $('mChannelInput').value = '';
-    // ✅ التعافي التلقائي والإرسال المتوازي مفعّلان دائماً (مخفيان عن الواجهة)
     b.autoRecover = true;
     b.parallel = true;
     setToggle('tgAutoRecover', true);
@@ -4732,13 +4407,13 @@ function openSettings(id) {
     setChannelsFilter('all');
     renderChannelsList(b);
     $('settingsModal').classList.add('open');
-    startChannelsLiveMonitor(b); // ✅ ابدأ مراقبة حالة البث كل 45 ثانية
+    startChannelsLiveMonitor(b);
 }
 
 function closeSettings() {
     $('settingsModal').classList.remove('open');
     activeModalBotId = null;
-    stopChannelsLiveMonitor(); // ✅ أوقف المراقبة عند إغلاق النافذة
+    stopChannelsLiveMonitor();
 }
 
 function setToggle(id, on) {
@@ -4755,23 +4430,14 @@ function mToggle(toggleId, fieldName) {
     persist();
 }
 
-// ═══════════════════════════════════════
-//  ✅ كاش الـ chatroom (كان ناقص التعريف وبيعمل ReferenceError وبيمنع الإضافة)
-// ═══════════════════════════════════════
 if (typeof window._chatroomCache === 'undefined') window._chatroomCache = {};
 
-// ═══════════════════════════════════════
-//  ✅ التحقق من اسم القناة عبر Kick API الرسمي (Client ID / Secret الموجودين في الملف)
-//  - بيرجّع الـ slug الصحيح زي ما هو مكتوب عند كيك (حرف/شرطة/underscore مختلف)
-// ═══════════════════════════════════════
 var _kickAppToken = null, _kickAppTokenExp = 0;
 
 async function kickGetApiToken(forceNew) {
-    // توكن المستخدم لو متسجّل دخول بكيك
     var ut = null;
     try { ut = sessionStorage.getItem('kick_access_token'); } catch (e) {}
     if (ut && !forceNew) return ut;
-    // توكن التطبيق (client_credentials)
     if (_kickAppToken && Date.now() < _kickAppTokenExp && !forceNew) return _kickAppToken;
     var body = new URLSearchParams({
         grant_type: 'client_credentials',
@@ -4792,7 +4458,6 @@ async function kickGetApiToken(forceNew) {
 
 function _slugLoose(s) { return String(s || '').toLowerCase().replace(/[\s\-_]/g, ''); }
 
-// يرجّع: {ok:true, slug, broadcasterId, isLive} | {ok:false, reason:'not_found'|'error'}
 async function kickVerifyChannelApi(typed) {
     var variants = [typed];
     if (typed.indexOf('_') !== -1) variants.push(typed.replace(/_/g, '-'));
@@ -4826,7 +4491,7 @@ async function kickVerifyChannelApi(typed) {
                         };
                     }
                 }
-                break; // رد سليم لكن مفيش قناة بالاسم ده → جرّب الصيغة اللي بعدها
+                break;
             } catch (e) {
                 sawError = true;
                 break;
@@ -4858,7 +4523,6 @@ async function mAddChannel() {
     if (addBtn) { addBtn.disabled = true; addBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>'; }
 
     try {
-        // ✅ الاسم الصحيح بيتقرا من الـ API
         var slug = typed;
         var apiInfo = null;
         try { apiInfo = await kickVerifyChannelApi(typed); } catch (e) { apiInfo = { ok: false, reason: 'error' }; }
@@ -4866,7 +4530,6 @@ async function mAddChannel() {
         if (apiInfo.ok) {
             slug = apiInfo.slug;
         } else if (apiInfo.reason === 'not_found') {
-            // القناة مش موجودة فعلاً عند كيك — منضيفهاش ونوضّح السبب
             if (hint) {
                 hint.style.display = '';
                 hint.style.color = 'var(--danger)';
@@ -4875,7 +4538,6 @@ async function mAddChannel() {
             }
             return;
         }
-        // reason === 'error' (مشكلة شبكة/توكن): نضيف بالاسم المكتوب ومينفعش نوقف المستخدم
 
         if (findChannel(b, slug)) { toast('القناة مضافة مسبقاً', 'i'); inp.value = ''; return; }
 
@@ -4888,7 +4550,7 @@ async function mAddChannel() {
             var channel = makeChannel(slug);
             channel.chatroomId = cached;
             channel.verified = !!cached || apiInfo.ok;
-            channel.enabled = false; // تُضاف مقفولة — التفعيل يدوي
+            channel.enabled = false;
             if (apiInfo.ok) { channel.isLive = apiInfo.isLive; channel.broadcasterId = apiInfo.broadcasterId; }
             acc.channels.push(channel);
         }
@@ -4914,7 +4576,6 @@ async function mAddChannel() {
     }
 }
 
-// ✅ جلب رقم الـ chatroom بصمت بعد الإضافة — الفشل هنا لا يؤثر على شيء
 function prefetchChatroomId(slug, bot) {
     var key = slug.replace(/_/g, '-');
     var variants = [slug];
@@ -4943,7 +4604,6 @@ function mRemoveChannel(slug) {
     var b = findBot(activeModalBotId);
     if (!b) return;
     askConfirmDelete('هل أنت متأكد من حذف القناة "' + slug + '" من كل البوتات؟', function() {
-        // ✅ احذفها من كل الحسابات مش من الحساب المفتوح بس
         for (var i = 0; i < accounts.length; i++) {
             accounts[i].channels = accounts[i].channels.filter(function(c){ return c.slug !== slug; });
         }
@@ -4972,7 +4632,6 @@ function setChannelsFilter(f) {
 function renderChannelsList(b) {
     var box = $('mChannelsList');
 
-    // ✅ تحديث عدّادات التبويبات (الكل / مباشر / OFF)
     var totalCount = b.channels ? b.channels.length : 0;
     var liveCount = 0, offCount = 0;
     if (b.channels) {
@@ -4989,7 +4648,6 @@ function renderChannelsList(b) {
         return;
     }
 
-    // ✅ فلترة القنوات حسب التبويب النشط
     var listToRender = b.channels;
     if (channelsFilterTab === 'live') {
         listToRender = b.channels.filter(function(c){ return c.isLive === true; });
@@ -5008,7 +4666,6 @@ function renderChannelsList(b) {
         var ch = listToRender[i];
         var status = ch.status || 'idle';
         var isEnabled = ch.enabled !== false;
-        // ✅ إذا كانت القناة معطّلة، تظهر بحالة "معطّلة"
         var cardCls = 'channel-card';
         if (!isEnabled) {
             cardCls += ' disabled';
@@ -5017,7 +4674,6 @@ function renderChannelsList(b) {
         }
         var statusText, statusCls;
         if (!isEnabled) {
-            // ✅ القناة معطّلة يدوياً — تظهر OFF
             statusText = 'OFF'; statusCls = 'off';
         } else if (status === 'on') { statusText = 'ON'; statusCls = 'on'; }
         else if (status === 'off') { statusText = 'OFF'; statusCls = 'off'; }
@@ -5042,11 +4698,9 @@ function renderChannelsList(b) {
         html += '<span class="meta-item"><i class="fas fa-repeat"></i>' + repeatText + '</span>';
         if (sentText) html += '<span class="meta-item" style="color:#7dffb0">' + sentText + '</span>';
         html += '</div></div>';
-        // ✅ زر التشغيل/الإطفاء
         var toggleCls = 'channel-toggle ' + (isEnabled ? 'on' : 'off');
         html += '<div class="' + toggleCls + '" onclick="toggleChannel(\'' + safeSlug + '\')" title="' + (isEnabled ? 'إطفاء' : 'تشغيل') + '"></div>';
         html += '<div class="channel-actions">';
-        // ✅ زر استثناء القناة — إرسال دائم في كل الحالات
         var _exempt = isExemptChannel(ch.slug);
         html += '<button class="btn btn-ghost" onclick="toggleExemptChannel(\'' + safeSlug + '\')" title="' + (_exempt ? 'إلغاء استثناء القناة' : 'استثناء القناة — إرسال دائم في كل الحالات') + '" style="color:' + (_exempt ? 'var(--accent)' : 'var(--muted)') + '"><i class="' + (_exempt ? 'fas' : 'far') + ' fa-star"></i></button>';
         html += '<button class="btn btn-fire" onclick="openChannelSettings(\'' + safeSlug + '\')" title="إعدادات القناة"><i class="fas fa-gear"></i></button>';
@@ -5055,24 +4709,17 @@ function renderChannelsList(b) {
         html += '</div>';
     }
     box.innerHTML = html;
-    // ✅ أعِد تطبيق فلتر البحث لو الاسم مكتوب (إخفاء/إظهار العناصر فقط — بدون إعادة تحميل اللاعبين)
     if (typeof mFilterChannels === 'function') mFilterChannels();
 }
 
-// ═══════════════════════════════════════
-//  ✅ بحث فوري في قائمة القنوات من مربع الإضافة
-//  - بيكتب وبس من غير أي زر: القناة المطابقة تطلع فوق والباقي يتخفي
-//  - الإخفاء بـ display فقط — اللاعبين والقنوات بيفضلوا شغالين زي ما هما
-//  - لما يمسح الاسم، كل القنوات تظهر تاني
-// ═══════════════════════════════════════
 function normArSearch(s) {
     return String(s || '')
         .toLowerCase()
-        .replace(/[\u064B-\u0652\u0640]/g, '')      // شيل التشكيل
-        .replace(/[\u0622\u0623\u0625\u0671]/g, '\u0627') // آ أ إ ٱ ← ا
-        .replace(/\u0649/g, '\u064A')               // ى ← ي
-        .replace(/\u0629/g, '\u0647')               // ة ← ه
-        .replace(/[\s\-_@#]/g, '');                 // تجاهل المسافات والشرطات والرموز
+        .replace(/[\u064B-\u0652\u0640]/g, '')
+        .replace(/[\u0622\u0623\u0625\u0671]/g, '\u0627')
+        .replace(/\u0649/g, '\u064A')
+        .replace(/\u0629/g, '\u0647')
+        .replace(/[\s\-_@#]/g, '');
 }
 
 function mFilterChannels() {
@@ -5088,9 +4735,7 @@ function mFilterChannels() {
     for (var i = 0; i < cards.length; i++) {
         var slug = cards[i].getAttribute('data-slug') || '';
         var match = (!q) || (normArSearch(slug).indexOf(q) !== -1);
-        // ✅ إخفاء/إظهار فقط — مفيش أي إعادة رسم أو إيقاف للقناة
         cards[i].style.display = match ? '' : 'none';
-        // ✅ القناة المطابقة تطلع فوق بدون تغيير ترتيب الـ DOM
         cards[i].style.order = (q && match) ? '-1' : '';
         if (match) shown++;
     }
@@ -5106,7 +4751,6 @@ function mFilterChannels() {
     }
 }
 
-// ✅ تشغيل/إطفاء قناة محددة
 function toggleChannel(slug) {
     if (activeModalBotId === null) return;
     var b = findBot(activeModalBotId);
@@ -5114,11 +4758,9 @@ function toggleChannel(slug) {
     var ch = findChannel(b, slug);
     if (!ch) return;
     ch.enabled = !ch.enabled;
-    // إذا تم إطفاء القناة أثناء الإرسال، أوقف الإرسال لها فقط
     if (!ch.enabled && b.isSending) {
         ch.status = 'idle';
         ch.error = '';
-        // ملاحظة: حلقة الإرسال ستكتشف هذا وتتوقف تلقائياً
     }
     persist();
     renderChannelsList(b);
@@ -5126,7 +4768,6 @@ function toggleChannel(slug) {
     toast(ch.enabled ? 'تم تشغيل القناة: ' + slug : 'تم إطفاء القناة: ' + slug, 'i');
 }
 
-// حفظ إعدادات البوت (فقط التبديلات على مستوى البوت)
 function saveSettings() {
     if (activeModalBotId === null) return;
     var b = findBot(activeModalBotId);
@@ -5141,9 +4782,6 @@ function saveSettings() {
     renderBotList();
 }
 
-// ═══════════════════════════════════════
-//  نافذة إعدادات قناة محددة
-// ═══════════════════════════════════════
 var activeChannelSlug = null;
 
 var stickersList = '';
@@ -5153,7 +4791,6 @@ var STICKERS_JSON_URLS = [
     'https://raw.githubusercontent.com/attiakhaled663-cloud/BadBoy-Kick/refs/heads/main/emote.json'
 ];
 
-// emote.json = نص عادي: كل سطر رسالة، بدون أقواس أو فواصل أو علامات اقتباس
 function parseStickersText(raw) {
     var txt = String(raw || '').replace(/^\uFEFF/, '').trim();
     if (!txt || txt.charAt(0) === '<') return '';
@@ -5216,7 +4853,6 @@ function openChannelSettings(slug) {
     setToggle('tgStreamerComments', !!ch.streamerComments);
 
     if (ch.streamerComments) {
-        // ✅ تعليقات تمساح لها الأولوية على باقي الأوضاع
         $('cMessages').value = TAMSAH_STREAMER_COMMENTS.join('\n');
         $('cMessages').readOnly = true;
     } else if (ch.stickersOnly) {
@@ -5256,7 +4892,6 @@ function cToggleInfinite() {
     persist();
 }
 
-// ✅ تبديل التأخير العشوائي
 function cToggleRandomDelay() {
     if (activeModalBotId === null || !activeChannelSlug) return;
     var b = findBot(activeModalBotId);
@@ -5273,7 +4908,6 @@ function cToggleRandomDelay() {
     persist();
 }
 
-// ✅ تبديل الرسائل العشوائية
 function cToggleRandomMessages() {
     if (activeModalBotId === null || !activeChannelSlug) return;
     var b = findBot(activeModalBotId);
@@ -5284,7 +4918,6 @@ function cToggleRandomMessages() {
     persist();
 }
 
-// ✅ تبديل "رسالتين معاً"
 function cToggleTwoMessages() {
     if (activeModalBotId === null || !activeChannelSlug) return;
     var b = findBot(activeModalBotId);
@@ -5295,7 +4928,6 @@ function cToggleTwoMessages() {
     persist();
 }
 
-// ✅ تبديل "أربعة رسائل معاً"
 function cToggleFourMessages() {
     if (activeModalBotId === null || !activeChannelSlug) return;
     var b = findBot(activeModalBotId);
@@ -5306,7 +4938,6 @@ function cToggleFourMessages() {
     persist();
 }
 
-// ✅ تبديل "تعليقات للاستريمر تمساح" في إعدادات القناة العادية — بدون كلمة سر
 function cToggleStreamerComments() {
     if (activeModalBotId === null || !activeChannelSlug) return;
     var b = findBot(activeModalBotId);
@@ -5336,7 +4967,7 @@ function cToggleStickersOnly() {
     if (!ch) return;
     ch.stickersOnly = !ch.stickersOnly;
     setToggle('tgStickersOnly', ch.stickersOnly);
-    if (ch.streamerComments) { persist(); return; } // تعليقات تمساح مفعّلة — تبقى الرسائل كما هي
+    if (ch.streamerComments) { persist(); return; }
     if (ch.stickersOnly) {
         ensureStickersList().then(function (list) {
             $('cMessages').value = list;
@@ -5356,13 +4987,11 @@ function saveChannelSettings() {
     if (!ch) return;
     ch.messages = $('cMessages').value;
     ch.interval = Math.max(1, parseInt($('cInterval').value) || 5);
-    // ✅ التأخير العشوائي
     var dMin = parseInt($('cDelayMin').value) || 3;
     var dMax = parseInt($('cDelayMax').value) || 7;
     if (dMin > dMax) { var tmp = dMin; dMin = dMax; dMax = tmp; }
     ch.delayMin = Math.max(1, dMin);
     ch.delayMax = Math.max(ch.delayMin, dMax);
-    // ✅ الـ toggles
     ch.isInfinite = $('tgChannelInfinite').classList.contains('on');
     ch.randomDelay = $('tgRandomDelay').classList.contains('on');
     ch.randomMessages = $('tgRandomMessages').classList.contains('on');
@@ -5380,17 +5009,13 @@ function saveChannelSettings() {
     renderBotList();
 }
 
-// ═══════════════════════════════════════
-//  تشغيل البوتات المحددة
-// ═══════════════════════════════════════
-// ✅ عدّاد تشغيل البوتات المتسلسل + حالة الإيقاف الإجباري
-var _botStartQueue = [];          // قائمة البوتات المنتظرة للتشغيل
-var _botStartTimer = null;        // مؤقّت التأخير بين البوتات
-var _forceStopAll = false;        // علم الإيقاف الإجباري
-var _bulkRunActive = false;       // ✅ يصبح true بعد الضغط على "تشغيل المحددة" — أي بوت يتم تحديده بعدها يلتحق بالتشغيل تلقائياً
+var _botStartQueue = [];
+var _botStartTimer = null;
+var _forceStopAll = false;
+var _bulkRunActive = false;
 
-var _lastBulkToggleTime = 0;      // آخر وقت تم فيه التشغيل أو الإيقاف
-var BULK_TOGGLE_COOLDOWN = 3000;  // 3 ثوانٍ
+var _lastBulkToggleTime = 0;
+var BULK_TOGGLE_COOLDOWN = 3000;
 
 function toggleBulkRun() {
     var now = Date.now();
@@ -5443,26 +5068,21 @@ async function startSelectedBots() {
         return;
     }
 
-    // ✅ إعادة ضبط حالة الإيقاف الإجباري + بناء قائمة الانتظار
     _forceStopAll = false;
-    _bulkRunActive = true; // ✅ تفعيل وضع "التشغيل الجماعي" — أي تحديد جديد بعد كده يلتحق بالتشغيل تلقائياً
-    if (typeof updateBulkUI === 'function') updateBulkUI(); // ✅ تحديث فوري لزر تشغيل المحددة ليتحول للأحمر ☢️
+    _bulkRunActive = true;
+    if (typeof updateBulkUI === 'function') updateBulkUI();
     _botStartQueue = toStart.slice();
     toast('تشغيل ' + toStart.length + ' بوت (كل بوت بعد ' + (_interBotDelay/1000) + ' ثانية)', 's');
 
-    // ✅ شغّل البوت الأول فوراً
     _startNextBotInQueue();
 }
 
-// ✅ تشغيل البوت التالي في قائمة الانتظار (مع تأخير 3 ثوانٍ)
 function _startNextBotInQueue() {
-    // ✅ تحقق من الإيقاف الإجباري
     if (_forceStopAll) {
         _botStartQueue = [];
         _botStartTimer = null;
         return;
     }
-    // ✅ إذا القائمة فارغة، انتهى التشغيل
     if (_botStartQueue.length === 0) {
         _botStartTimer = null;
         return;
@@ -5481,10 +5101,8 @@ function _startNextBotInQueue() {
     }
 }
 
-// ✅ عند تحديد بوت جديد أثناء نشاط وضع "التشغيل الجماعي" — يلتحق بالتشغيل فوراً بدون داعي للضغط على تشغيل المحددة تاني
 function _autoJoinBulkRun(bot) {
-    if (!bot || bot.isSending) return; // بوت شغّال بالفعل أو غير موجود — تجاهل
-    // ✅ إذا الإعدادات الموحدة الخاصة بهذا الحساب مفعّلة ولها رسائل — كل قنواته تعتبر صالحة
+    if (!bot || bot.isSending) return;
     var bUnified = getBotUnified(bot);
     var unifiedReady = bUnified.enabled && bUnified.messages && bUnified.messages.trim();
     var validChannels = 0;
@@ -5497,14 +5115,12 @@ function _autoJoinBulkRun(bot) {
             if (bot.channels[c].messages && bot.channels[c].messages.trim()) validChannels++;
         }
     }
-    if (bot.channels.length === 0 || validChannels === 0) return; // لا توجد قنوات/رسائل صالحة — تجاهل بصمت
+    if (bot.channels.length === 0 || validChannels === 0) return;
 
-    // ✅ يشتغل فوراً بدون أي تأخير أو انتظار دوره في طابور التشغيل المتسلسل
     startBotLoop(bot).catch(function(){});
     toast('(' + bot.username + ') انضم للتشغيل فوراً', 's');
 }
 
-// ✅ إيقاف بوت واحد فقط (يُستخدم عند إلغاء تحديده أثناء عمله — كأنه إيقاف فردي)
 function _stopSingleBot(bot) {
     if (!bot || !bot.isSending) return;
     bot.isSending = false;
@@ -5512,7 +5128,6 @@ function _stopSingleBot(bot) {
         abortControllers[bot.id].abort();
         delete abortControllers[bot.id];
     }
-    // ✅ احذفه من طابور الانتظار لو كان لسه ما بدأش
     for (var i = _botStartQueue.length - 1; i >= 0; i--) {
         if (_botStartQueue[i].id === bot.id) _botStartQueue.splice(i, 1);
     }
@@ -5522,11 +5137,9 @@ function _stopSingleBot(bot) {
 }
 
 function stopAllBots() {
-    // ✅ تفعيل الإيقاف الإجباري — يوقف قائمة الانتظار فوراً
     _forceStopAll = true;
-    _bulkRunActive = false; // ✅ إلغاء وضع "التشغيل الجماعي" حتى لا يشغّل أي تحديد جديد تلقائياً بعد الإيقاف
+    _bulkRunActive = false;
     _botStartQueue = [];
-    // ✅ إلغاء مؤقّت التأخير إن كان يعمل
     if (_botStartTimer) {
         clearTimeout(_botStartTimer);
         _botStartTimer = null;
@@ -5544,17 +5157,12 @@ function stopAllBots() {
     else toast('تم إيقاف العد', 'i');
     forceUIUpdate();
 
-    // ✅ تصفير علم الإيقاف الإجباري بعد فترة قصيرة للسماح بتشغيل جديد لاحقاً
     setTimeout(function() { _forceStopAll = false; }, 500);
 }
 
-// ═══════════════════════════════════════
-//  حلقة إرسال واحدة لبوت محدد
-// ═══════════════════════════════════════
-var MAX_SEND_RETRIES = 8;   // ✅ 8 محاولات لتفادي التوقف نهائياً
-var RETRY_DELAY = 800;     // ✅ 0.8s بين المحاولات (سريع جداً)
+var MAX_SEND_RETRIES = 8;
+var RETRY_DELAY = 800;
 
-// ✅ توليد عدد صحيح عشوائي موزّع بالتساوي ضمن [min, max]
 function randomInt(min, max) {
     min = Math.max(1, Math.floor(min));
     max = Math.max(min, Math.floor(max));
@@ -5581,21 +5189,18 @@ function delay(ms, signal) {
 }
 
 async function startBotLoop(bot) {
-    // ✅ تحقق من الإيقاف الإجباري قبل البدء
     if (_forceStopAll) return;
-    // ✅ فلترة القنوات المفعّلة AND (لها رسائل خاصة OR الإعدادات الموحدة الخاصة بهذا الحساب مفعّلة)
     var bUnified = getBotUnified(bot);
     var unifiedReady = bUnified.enabled && bUnified.messages && bUnified.messages.trim();
     var validChannels = bot.channels.filter(function(c){
         if (c.enabled === false) return false;
-        if (unifiedReady) return true; // ✅ الإعدادات الموحدة — أي قناة مفعّلة صالحة
-        return c.messages && c.messages.trim(); // ✅ تحقق من رسائل القناة الخاصة
+        if (unifiedReady) return true;
+        return c.messages && c.messages.trim();
     });
     if (validChannels.length === 0) return;
 
     bot.isSending = true;
     bot.sent = 0;
-    // تصفير حالة كل قناة (المعطّلة تبقى idle)
     for (var i = 0; i < bot.channels.length; i++) {
         if (bot.channels[i].enabled !== false) {
             bot.channels[i].status = 'idle';
@@ -5607,17 +5212,13 @@ async function startBotLoop(bot) {
     abortControllers[bot.id] = new AbortController();
     forceUIUpdate();
 
-    // تشغيل حلقة لكل قناة صالحة
     if (bot.parallel === false && validChannels.length > 1) {
-        // تسلسلي
         for (var s = 0; s < validChannels.length; s++) {
             if (!bot.isSending || _forceStopAll) break;
-            // ✅ تحقق من التفعيل قبل كل قناة
             if (validChannels[s].enabled === false) continue;
             try { await runChannelLoop(bot, validChannels[s]); } catch(e) {}
         }
     } else {
-        // متوازي
         var loops = [];
         for (var j = 0; j < validChannels.length; j++) {
             loops.push(runChannelLoop(bot, validChannels[j]));
@@ -5632,21 +5233,17 @@ async function startBotLoop(bot) {
 
 async function runChannelLoop(bot, ch) {
     var slug = ch.slug;
-    // ✅ إذا كانت القناة معطّلة، لا تبدأ الإرسال
     if (ch.enabled === false) {
         ch.status = 'idle';
         return;
     }
-    // ✅ استخدم الإعدادات الموحدة الخاصة بهذا الحساب إذا كانت مفعّلة
     var eff = getEffectiveChannelSettings(ch, bot);
     var msgs = eff.messages.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
     var infinite = eff.isInfinite;
     var repeatCount = infinite ? 999999 : Math.max(1, eff.repeat || 1);
     var interval = eff.interval || 5;
 
-    // حلقة خارجية للتعافي
     while (bot.isSending) {
-        // ✅ تحقق من التفعيل في كل دورة
         if (ch.enabled === false) {
             ch.status = 'idle';
             ch.error = '';
@@ -5658,7 +5255,6 @@ async function runChannelLoop(bot, ch) {
             break;
         } catch(e) {
             if (!bot.isSending) break;
-            // ✅ تحقق من التفعيل بعد الخطأ
             if (ch.enabled === false) {
                 ch.status = 'idle';
                 requestUIUpdate();
@@ -5693,19 +5289,16 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
     var slug = ch.slug;
     var cid = null;
     var fa = 0;
-    // ✅ تحقق من التفعيل قبل البدء
     if (ch.enabled === false) {
         ch.status = 'idle';
         return;
     }
-    // ✅ إذا كان chatroom_id محفوظاً (تم التحقق عند الإضافة)، استخدمه مباشرة
     if (ch.chatroomId && ch.verified) {
         cid = ch.chatroomId;
         ch.status = 'on';
         ch.error = '';
         requestUIUpdate();
     } else {
-        // ✅ لم يتم التحقق بعد — جلب chatroom_id (للقنوات القديمة)
         ch.status = 'connecting';
         requestUIUpdate();
         while (!cid && bot.isSending) {
@@ -5723,16 +5316,13 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                 continue;
             }
             try {
-                // ✅ كاش مشترك بين الحسابات — قناة واحدة = جلب واحد
                 var ckey = slug.replace(/_/g, '-');
                 cid = _chatroomCache[ckey] || null;
                 if (!cid) {
-                    // ✅ استخدم التحقق الشامل أولاً (يجرب كل البروكسيات)
                     var vResult = await verifyChannelComprehensive(slug, bot);
                     if (vResult.ok) {
                         cid = vResult.chatroomId;
                     } else if (vResult.reason === 'not_found') {
-                        // ✅ جرّب (_) بدل (-) أو العكس، ولو برضه مش موجودة أوقف القناة دي فقط
                         var alt = slug.indexOf('_') !== -1 ? slug.replace(/_/g, '-') : (slug.indexOf('-') !== -1 ? slug.replace(/-/g, '_') : null);
                         if (alt) {
                             var vAlt = await verifyChannelComprehensive(alt, bot);
@@ -5745,14 +5335,12 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                             return;
                         }
                     } else {
-                        // ✅ ارجع للطريقة القديمة كاحتياط
                         var chData = await fetchChannel(slug, bot);
                         cid = extractChatroomId(chData);
                         if (!cid) cid = await fetchChatroomId(slug, bot);
                     }
                     if (cid) _chatroomCache[ckey] = cid;
                 }
-                // ✅ حفظ chatroom_id للاستخدام المستقبلي
                 if (cid) {
                     ch.chatroomId = cid;
                     ch.verified = true;
@@ -5778,44 +5366,34 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
         requestUIUpdate();
     }
 
-    // ✅ نظام البركة العشوائية الذكي للرسائل
-    // يضمن: كل رسالة تُرسل مرة واحدة قبل التكرار + لا تكرار متتالٍ عبر الدورات
     var msgPool = [];
     var lastSentMsg = null;
-    var msgIndex = 0; // ✅ عدّار للوضع غير العشوائي (ترتيب ثابت)
+    var msgIndex = 0;
     function nextMessage() {
-        // ✅ الوضع غير العشوائي: أرسل بالترتيب الثابت، وانتقل للرسالة التالية
         if (!eff.randomMessages) {
             var msg = msgs[msgIndex % msgs.length];
-            msgIndex++; // ✅ انتقل للرسالة التالية
+            msgIndex++;
             return msg;
         }
-        // ✅ الرسائل العشوائية: استخدم البركة
         if (msgPool.length === 0) {
-            // إعادة ملء البركة بكل الرسائل
             msgPool = msgs.slice();
-            // منع تكرار آخر رسالة في الدورة السابقة كأول رسالة في الدورة الجديدة
             if (lastSentMsg !== null && msgPool.length > 1) {
                 var idx = msgPool.indexOf(lastSentMsg);
                 if (idx >= 0) {
                     msgPool.splice(idx, 1);
-                    // أعِدها في موقع عشوائي (لضمان عدالة التوزيع)
                     var randPos = Math.floor(Math.random() * (msgPool.length + 1));
                     msgPool.splice(randPos, 0, lastSentMsg);
                 }
             }
         }
-        // اختر رسالة عشوائية من البركة
         var pickIdx = Math.floor(Math.random() * msgPool.length);
         var picked = msgPool.splice(pickIdx, 1)[0];
         lastSentMsg = picked;
         return picked;
     }
 
-    // ✅ حساب التأخير لكل رسالة (ثابت أو عشوائي)
     function getDelay() {
         if (eff.randomDelay) {
-            // ✅ تأخير عشوائي: عدد صحيح ضمن [min, max] — مختلف لكل رسالة
             return randomInt(eff.delayMin || 3, eff.delayMax || 7);
         }
         return interval;
@@ -5827,26 +5405,18 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
     var offlineStreak = 0;
     var sig = function() { return abortControllers[bot.id] ? abortControllers[bot.id].signal : undefined; };
 
-    // ✅ فحص البث المباشر — يرجع true (تبث), false (أوفلاين), true (فشل الفحص - لا يوقف)
-    // ✅ السلوك الافتراضي: البوتات ترسل فقط للبث المباشر
-    // ✅ إذا sendToNonLive=true: تخطّى فحص البث وأرسل لكل القنوات
     async function checkLiveNow() {
-        // ✅ قناة مستثناة: أرسل في كل الحالات — طالعة لايف أو قافلة اللايف
         if (eff.exempt || isExemptChannel(slug)) return true;
         if (eff.sendToNonLive) return true;
         var now = Date.now();
-        // ✅ كاش لمدة 10 ثوانٍ فقط — للكشف السريع عن إغلاق البث
         if (now - lastLiveCheck < 10000 && ch.isLive !== undefined) {
             return ch.isLive;
         }
         lastLiveCheck = now;
         var live = await checkChannelLive(slug, bot);
         if (live === null) {
-            // فشل الفحص — احتفظ بالحالة السابقة (لا يوقف الإرسال)
             return ch.isLive !== false;
         }
-        // ✅ لا توقف الإرسال من أول ردّ "أوفلاين" — البروكسيات أحياناً ترجّع نسخة قديمة مخزّنة
-        // اشترط 3 ردود أوفلاين متتالية قبل الإيقاف
         if (live === true) { offlineStreak = 0; }
         else if (ch.isLive === true) {
             offlineStreak++;
@@ -5855,12 +5425,10 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
         var wasLive = ch.isLive;
         ch.isLive = live;
         if (wasLive === true && live === false) {
-            // القناة كانت تبث وتوقفت ← أوقف الإرسال
             ch.status = 'warning';
             ch.error = 'توقف البث — بانتظار عودته...';
             requestUIUpdate();
         } else if (wasLive === false && live === true) {
-            // القناة عادت للبث ← استأنف
             ch.status = 'on';
             ch.error = '';
             requestUIUpdate();
@@ -5868,7 +5436,6 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
         return live;
     }
 
-    // ✅ انتظار عودة البث — يخرج عند عودة البث أو إيقاف البوت
     async function waitForLive() {
         ch.status = 'warning';
         ch.error = 'القناة أوفلاين — بانتظار بدء البث...';
@@ -5885,12 +5452,10 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                 requestUIUpdate();
                 return true;
             }
-            // live === null (فشل) أو false — استمر بالانتظار
         }
         return false;
     }
 
-    // ✅ فحص أولي قبل بدء الإرسال (السلوك الافتراضي: فقط للبث المباشر)
     if (!eff.sendToNonLive) {
         var isLive = await checkLiveNow();
         if (!isLive) {
@@ -5900,7 +5465,6 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
     }
 
     while (bot.isSending) {
-        // ✅ تحقق من التفعيل في كل دورة إرسال
         if (ch.enabled === false) {
             ch.status = 'idle';
             requestUIUpdate();
@@ -5908,23 +5472,18 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
         }
         if (!infinite && roundNum >= repeatCount) break;
 
-        // ✅ فحص البث المباشر قبل كل دورة رسائل (السلوك الافتراضي: فقط للبث المباشر)
         if (!eff.sendToNonLive) {
             var liveNow = await checkLiveNow();
             if (!liveNow) {
-                // القناة أوفلاين — انتظر عودة البث
                 var resumed = await waitForLive();
                 if (!resumed) return;
-                // عاد البث — تابع
             }
         }
 
-        // ✅ في بداية كل دورة، أعد تصفير البركة (للرسائل العشوائية)
         if (sentInRound >= msgs.length) {
             sentInRound = 0;
             roundNum++;
             if (!infinite && roundNum >= repeatCount) break;
-            // ✅ تصفير البركة لبدء دورة جديدة
             if (eff.randomMessages) {
                 msgPool = [];
             }
@@ -5932,32 +5491,24 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
 
         if (!bot.isSending) break;
 
-        // ✅ إرسال رسالة واحدة كاملة (اختيار الرسالة + فحص البث + إعادة المحاولة)
-        // ترجع: 'sent' نجح الإرسال، 'failed' فشل نهائياً (وضع غير لا نهائي)، 'exit' يجب الخروج من runChannelOnce فوراً
         async function sendOneMessage() {
-            // ✅ احصل على الرسالة التالية (عشوائية أو ثابتة)
             var currentMsg = nextMessage();
             sentInRound++;
 
-            // ✅ تحقق من التفعيل قبل كل رسالة
             if (ch.enabled === false) {
                 ch.status = 'idle';
                 requestUIUpdate();
                 return 'exit';
             }
 
-            // ✅ فحص البث المباشر قبل كل رسالة (السلوك الافتراضي: فقط للبث المباشر)
             if (!eff.sendToNonLive) {
                 var stillLive = await checkLiveNow();
                 if (!stillLive) {
-                    // القناة أوفلاين — انتظر عودة البث
                     var resumed2 = await waitForLive();
                     if (!resumed2) return 'exit';
-                    // عاد البث — أعد المحاولة لنفس الرسالة
                 }
             }
 
-            // انتظار عودة الإنترنت
             if (!NetworkGuard.isOnline && infinite) {
                 ch.status = 'warning';
                 ch.error = 'بانتظار عودة الإنترنت...';
@@ -5975,7 +5526,6 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                 ch.status = 'on';
             }
 
-            // ✅ إرسال الرسالة الحالية
             var msgSentLocal = false, failCount = 0, lastErr = null;
             while (!msgSentLocal && bot.isSending) {
                 if (!infinite && failCount >= MAX_SEND_RETRIES) break;
@@ -6034,12 +5584,10 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
             return msgSentLocal ? 'sent' : 'failed';
         }
 
-        // ✅ إرسال الرسالة الأولى
         var r1 = await sendOneMessage();
         if (r1 === 'exit') return;
         var msgSent = (r1 === 'sent');
 
-        // ✅ أربعة رسائل معاً — أرسل 3 رسائل إضافية (المجموع 4) بفاصل 500 مللي ثانية بين كل رسالة
         if (eff.fourMessages && msgSent && bot.isSending && ch.enabled !== false) {
             for (var fm = 0; fm < 3; fm++) {
                 if (!bot.isSending || ch.enabled === false) break;
@@ -6048,34 +5596,25 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                 if (bot.isSending && ch.enabled !== false) {
                     var rfm = await sendOneMessage();
                     if (rfm === 'exit') return;
-                    // ملحوظة: msgSent تبقى true من الرسالة الأولى حتى لو فشلت إحدى الرسائل التالية،
-                    // لضمان استمرار دورة الانتظار الطبيعية للقناة
                 }
             }
         }
-        // ✅ رسالتين معاً — أرسل رسالة ثانية فوراً بعد فاصل قصير (150 ميلي ثانيه ) قبل الانتظار الطويل
         else if (eff.twoMessages && msgSent && bot.isSending && ch.enabled !== false) {
             try { await delay(40, abortControllers[bot.id] ? abortControllers[bot.id].signal : undefined); }
             catch(aborted) { return; }
             if (bot.isSending && ch.enabled !== false) {
                 var r2 = await sendOneMessage();
                 if (r2 === 'exit') return;
-                // ملحوظة: msgSent تبقى true من الرسالة الأولى حتى لو فشلت الثانية،
-                // لضمان استمرار دورة الانتظار الطبيعية للقناة
             }
         }
 
-        // ✅ الفاصل الزمني — مختلف لكل رسالة (عشوائي أو ثابت)
-        // ✅ مع فحص البث كل 30 ثانية أثناء الانتظار — يوقف فوراً عند إغلاق البث
         if (bot.isSending && msgSent) {
             var isLastInRound = (sentInRound >= msgs.length);
             var isLastRound = (!infinite && roundNum >= repeatCount - 1);
             if (!(isLastInRound && isLastRound)) {
-                // ✅ احسب التأخير لهذه الرسالة (عشوائي أو ثابت)
                 var waitSec = getDelay();
                 var totalWaitMs = waitSec * 1000;
-                // ✅ قسّم الانتظار إلى فترات 30 ثانية كحد أقصى، مع فحص البث بينها
-                var chunkMs = 30000; // 30 ثانية
+                var chunkMs = 30000;
                 var waitedMs = 0;
                 while (waitedMs < totalWaitMs && bot.isSending) {
                     var remainingMs = totalWaitMs - waitedMs;
@@ -6083,14 +5622,11 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                     try { await delay(sleepMs, abortControllers[bot.id] ? abortControllers[bot.id].signal : undefined); }
                     catch(aborted) { return; }
                     waitedMs += sleepMs;
-                    // ✅ فحص البث المباشر بعد كل فترة 30 ثانية — يوقف فوراً عند إغلاق البث
                     if (!eff.sendToNonLive && bot.isSending && waitedMs < totalWaitMs) {
                         var liveCheck = await checkLiveNow();
                         if (!liveCheck) {
-                            // ✅ البث توقف أثناء الانتظار — أوقف الإرسال فوراً
                             var resumed3 = await waitForLive();
                             if (!resumed3) return;
-                            // عاد البث — تابع الانتظار المتبقي
                         }
                     }
                 }
@@ -6099,9 +5635,6 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
     }
 }
 
-// ═══════════════════════════════════════
-//  NetworkGuard
-// ═══════════════════════════════════════
 var NetworkGuard = {
     isOnline: true,
     isChecking: false,
@@ -6169,9 +5702,6 @@ function showNet(type, text, hideAfter) {
     if (hideAfter) setTimeout(function(){ el.classList.remove('show'); }, hideAfter);
 }
 
-// ═══════════════════════════════════════
-//  جسيمات نارية (خلفية)
-// ═══════════════════════════════════════
 (function() {
     var cv = $('fireCanvas');
     if (!cv || !cv.getContext) return;
@@ -6207,42 +5737,34 @@ function showNet(type, text, hideAfter) {
     draw();
 })();
 
-// ═══════════════════════════════════════
-//  التهيئة
-// ═══════════════════════════════════════
 async function init() {
-    // ✅ تم إلغاء شاشة الدخول النارية وصوتها بطلب المستخدم
     var _splashEl = document.getElementById('splash');
     if (_splashEl) _splashEl.style.display = 'none';
 
     detectMode();
-    loadBestProxy(); // ✅ استعادة البروكسي الأفضل من الجلسة السابقة
+    loadBestProxy();
     loadFromStorage();
-    loadSendToNonLive(); // ✅ استعادة حالة زر الإرسال لغير المباشر
-    setToggle('tgSendNonLive', sendToNonLive); // ✅ ضبط الزر في الترويسة
-    loadInterBotDelay(); // ✅ استعادة تأخير التشغيل بين البوتات (يُحدَّث عند استعادة كود)
-    loadExemptChannels(); // ✅ استعادة قنوات الاستثناء (إرسال دائم في كل الحالات)
-    updateExemptBadge();  // ✅ ضبط عدّاد زر الاستثناء في الترويسة
+    loadSendToNonLive();
+    setToggle('tgSendNonLive', sendToNonLive);
+    loadInterBotDelay();
+    loadExemptChannels();
+    updateExemptBadge();
     try { NetworkGuard.start(); } catch(e) {}
     fetchXsrf().catch(function(){});
-    // ✅ تسخين البروكسيات مبكراً — يجد بروكسي شغال قبل أن يحاول المستخدم إضافة قناة
     prewarmProxies().catch(function(){});
     registerServiceWorker();
     SetupPersistence();
 
-    // ✅ نعرض دائماً الشاشة الرئيسية (حتى لو لا توجد بوتات) بدلاً من شاشة الإضافة
     renderBotList();
     showPhase('main');
 }
 
-// ✅ أصوات حماسية للدخولية — Web Audio API (لا حاجة لملفات صوت)
 function playSplashSound() {
-    return; // ✅ تم إلغاء صوت شاشة الدخول بطلب المستخدم
+    return;
     try {
         var ctx = new (window.AudioContext || window.webkitAudioContext)();
         var now = ctx.currentTime;
 
-        // ✅ صوت "whoosh" ناري عند البداية (ضجيج أبيض يخفت تدريجياً)
         var noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 1.5, ctx.sampleRate);
         var noiseData = noiseBuf.getChannelData(0);
         for (var i = 0; i < noiseData.length; i++) {
@@ -6261,7 +5783,6 @@ function playSplashSound() {
         noise.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(ctx.destination);
         noise.start(now);
 
-        // ✅ نغمة "boom" حماسية (bass + sub-bass)
         var bass = ctx.createOscillator();
         bass.type = 'sine';
         bass.frequency.setValueAtTime(80, now + 0.3);
@@ -6273,7 +5794,6 @@ function playSplashSound() {
         bass.connect(bassGain); bassGain.connect(ctx.destination);
         bass.start(now + 0.3); bass.stop(now + 2);
 
-        // ✅ نغمة "impact" معدنية (تردد عالي سريع)
         var impact = ctx.createOscillator();
         impact.type = 'sawtooth';
         impact.frequency.setValueAtTime(1200, now + 0.3);
@@ -6285,7 +5805,6 @@ function playSplashSound() {
         impact.connect(impactGain); impactGain.connect(ctx.destination);
         impact.start(now + 0.3); impact.stop(now + 0.8);
 
-        // ✅ رنين حماسي متصاعد (نغمة بطولية)
         var epic = ctx.createOscillator();
         epic.type = 'triangle';
         epic.frequency.setValueAtTime(220, now + 0.5);
@@ -6298,7 +5817,6 @@ function playSplashSound() {
         epic.connect(epicGain); epicGain.connect(ctx.destination);
         epic.start(now + 0.5); epic.stop(now + 3);
 
-        // ✅ ومضة صوتية عند وميض الصاعقة (at 1.2s)
         var zap = ctx.createOscillator();
         zap.type = 'square';
         zap.frequency.setValueAtTime(2000, now + 1.2);
@@ -6310,7 +5828,6 @@ function playSplashSound() {
         zap.connect(zapGain); zapGain.connect(ctx.destination);
         zap.start(now + 1.2); zap.stop(now + 1.4);
 
-        // ✅ ومضة صوتية ثانية عند 1.7s
         var zap2 = ctx.createOscillator();
         zap2.type = 'square';
         zap2.frequency.setValueAtTime(1500, now + 1.7);
@@ -6325,7 +5842,6 @@ function playSplashSound() {
     } catch(e) {}
 }
 
-// ✅ جسيمات نارية لشاشة الدخول
 function startSplashFire() {
     var cv = document.getElementById('splashFire');
     if (!cv || !cv.getContext) return;
@@ -6363,18 +5879,13 @@ function startSplashFire() {
     draw();
 }
 
-// ═══════════════════════════════════════
-//  Service Worker — تشغيل كـ PWA
-// ═══════════════════════════════════════
 function registerServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
     try {
-        // SW مضمّن كـ Blob لتفادي الحاجة لملف منفصل
         var swCode = `
             self.addEventListener('install', function(e) { self.skipWaiting(); });
             self.addEventListener('activate', function(e) { e.waitUntil(self.clients.claim()); });
             self.addEventListener('message', function(e) {
-                // رسائل من الصفحة — يمكن استخدامها للتنبيهات
                 if (e.data && e.data.type === 'PING') {
                     e.source && e.source.postMessage({type:'PONG', t: Date.now()});
                 }
@@ -6386,9 +5897,6 @@ function registerServiceWorker() {
     } catch(e) {}
 }
 
-// ═══════════════════════════════════════
-//  Wake Lock — يبقي الجهاز مستيقظاً أثناء الإرسال
-// ═══════════════════════════════════════
 var WakeLockMgr = {
     lock: null,
     requested: false,
@@ -6414,7 +5922,6 @@ var WakeLockMgr = {
         }
     },
     reAcquire: async function() {
-        // إعادة طلب Wake Lock عند عودة الصفحة من الخلفية
         if (this.anyBotRunning() && !this.lock) {
             await this.request();
         }
@@ -6454,7 +5961,6 @@ function clearRunningState() {
 }
 
 function SetupPersistence() {
-    // 1. Wake Lock عند بدء أي بوت
     var origStartBotLoop = startBotLoop;
     startBotLoop = async function(bot) {
         await origStartBotLoop(bot);
@@ -6525,7 +6031,6 @@ init();
 
 
 <script>
-/* GitHub Pages only — Kick OAuth 2.1 + PKCE */
 const KICK_CLIENT_ID = '01M2AMAR9T1V35NBG8472W6HCT';
 const KICK_CLIENT_SECRET = '3736873f99d17e20ac826acc09d7dc27527b4df737c8436631c4840053f45e67';
 const KICK_REDIRECT_URI = window.location.origin + window.location.pathname;
@@ -6642,7 +6147,6 @@ document.addEventListener("dragstart", function (e) { e.preventDefault(); });
 </script>
 
 
-<!-- token-check v3 fix -->
 <script>
 
 var _TC_REQ_TIMEOUT        = 7000;
@@ -6762,7 +6266,6 @@ async function _tcCheckLegacy(bot){
   return { status:'unknown', username:fb, error: lastErr || 'فشل الاتصال — تحقق من الإنترنت' };
 }
 
-// ✅ نفس طريقة نافذة تجديد التوكن: proxiedFetch على /api/v1/user ثم /api/v2/user
 async function checkSingleTokenStatus(bot){
   var tok = String((bot && bot.token) || '').trim();
   var fb  = (bot && bot.username) || 'حساب';
