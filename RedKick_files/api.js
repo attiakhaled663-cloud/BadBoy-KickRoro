@@ -105,6 +105,7 @@ async function proxiedFetch(kickPath, options) {
 
     var fullUrl = KICK_BASE + kickPath;
     var lastError = null;
+    var lastRes = null;
 
     var order = getProxyOrder(preferredProxy);
 
@@ -119,6 +120,12 @@ async function proxiedFetch(kickPath, options) {
                 fetch(url, opts),
                 new Promise(function(_, reject) { setTimeout(function(){ reject(new Error('timeout')); }, timeout); })
             ]);
+            if (options.requireOk && !res.ok && res.status !== 404 && pi < order.length - 1) {
+                _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
+                lastError = new Error('HTTP ' + res.status);
+                lastRes = { res: res, proxyUsed: p };
+                continue;
+            }
             _bestProxy = p;
             _proxyFailCount[p] = 0;
             saveBestProxy();
@@ -129,6 +136,7 @@ async function proxiedFetch(kickPath, options) {
             continue;
         }
     }
+    if (lastRes) return lastRes;
     throw lastError || new Error('فشل الاتصال — تحقق من الإنترنت');
 }
 
