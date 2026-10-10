@@ -4176,6 +4176,19 @@ async function verifyAndAdd() {
 
         var bot = makeBot(token, displayName);
         bot.workingProxy = pr.proxyUsed;
+        (function() {
+            var seen = {};
+            accounts.forEach(function(a) {
+                (a.channels || []).forEach(function(c) {
+                    var k = _slugLoose(c.slug);
+                    if (seen[k]) return;
+                    seen[k] = 1;
+                    var nc = JSON.parse(JSON.stringify(c));
+                    nc.status = 'idle'; nc.sent = 0; nc.error = ''; nc.retries = 0;
+                    bot.channels.push(nc);
+                });
+            });
+        })();
         accounts.push(bot);
         persist();
         $('inToken').value = '';
@@ -5318,6 +5331,9 @@ async function startBotLoop(bot) {
     }
     abortControllers[bot.id] = new AbortController();
     forceUIUpdate();
+    var _bgPoll = setInterval(function() {
+        if (bot.isSending) { try { pollChannelsLiveStatus(bot); } catch (e) {} }
+    }, 30000);
 
     if (bot.parallel === false && validChannels.length > 1) {
         for (var s = 0; s < validChannels.length; s++) {
@@ -5333,6 +5349,7 @@ async function startBotLoop(bot) {
         await Promise.allSettled(loops);
     }
 
+    clearInterval(_bgPoll);
     bot.isSending = false;
     delete abortControllers[bot.id];
     forceUIUpdate();
@@ -5556,7 +5573,7 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
         while (bot.isSending) {
             if (ch.enabled === false) { ch.status = 'idle'; requestUIUpdate(); return false; }
             try { await delay(10000, sig()); } catch(aborted) { return false; }
-            var live = await checkChannelLive(slug, bot);
+            var live = (ch.isLive === true) ? true : await checkChannelLive(slug, bot);
             if (live === null && ch.isLive === true) live = true;
             if (live === true) {
                 ch.isLive = true;
