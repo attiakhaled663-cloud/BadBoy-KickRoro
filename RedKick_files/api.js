@@ -12,6 +12,8 @@ if (CORSPROXY_KEY) {
     PROXIES.push({ name:'corsproxy.io', build:function(u){return 'https://corsproxy.io/?key='+CORSPROXY_KEY+'&url='+encodeURIComponent(u);}, canPost:true });
 }
 PROXIES.push({ name:'codetabs', build:function(u){return 'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u);}, canPost:false });
+PROXIES.push({ name:'corsproxy.org', build:function(u){return 'https://corsproxy.org/?'+encodeURIComponent(u);}, canPost:false });
+PROXIES.push({ name:'corsfix', build:function(u){return 'https://proxy.corsfix.com/?'+u;}, canPost:false });
 PROXIES.push({ name:'allorigins', build:function(u){return 'https://api.allorigins.win/raw?url='+encodeURIComponent(u);}, canPost:false });
 PROXIES.push({ name:'direct', build:function(u){return u;}, canPost:true });
 
@@ -41,32 +43,38 @@ function saveBestProxy() {
     } catch(e) {}
 }
 
-async function prewarmProxies() {
-    var testSlug = 'kick';
-    var candidates = [];
-    if (_bestProxy >= 0) candidates.push(_bestProxy);
-    for (var i = 0; i < PROXIES.length; i++) {
-        if (candidates.indexOf(i) === -1) candidates.push(i);
-    }
-    for (var pi = 0; pi < candidates.length; pi++) {
-        var p = candidates[pi];
-        try {
-            var res = await Promise.race([
-                fetch(PROXIES[p].build(KICK_BASE + '/api/v2/channels/' + testSlug), {method:'GET'}),
-                new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, 4000); })
-            ]);
-            if (res && res.ok) {
-                _bestProxy = p;
-                _proxyFailCount[p] = 0;
-                saveBestProxy();
-                return p;
-            }
-        } catch(e) {
-            _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
-        }
-    }
-    return -1;
+var _proxyLatency = {};
+function _proxyBodyOk(res, txt) {
+    if (!res || !res.ok) return false;
+    var t = String(txt || '').trim();
+    return t.charAt(0) === '{' || t.charAt(0) === '[';
 }
+async function prewarmProxies() {
+    var testUrl = KICK_BASE + '/api/v2/channels/kick';
+    var tests = PROXIES.map(function(px, p) {
+        return (async function() {
+            var t0 = Date.now();
+            try {
+                var res = await Promise.race([
+                    fetch(px.build(testUrl), {method:'GET'}),
+                    new Promise(function(_, rej){ setTimeout(function(){ rej(new Error('timeout')); }, 5000); })
+                ]);
+                var txt = await res.text();
+                if (_proxyBodyOk(res, txt)) { _proxyLatency[p] = Date.now() - t0; _proxyFailCount[p] = 0; return; }
+            } catch(e) {}
+            _proxyLatency[p] = 99999;
+            _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 3;
+        })();
+    });
+    await Promise.all(tests);
+    var best = -1, bestMs = 99999;
+    for (var p = 0; p < PROXIES.length; p++) {
+        if (_proxyLatency[p] < bestMs) { bestMs = _proxyLatency[p]; best = p; }
+    }
+    if (best >= 0) { _bestProxy = best; saveBestProxy(); }
+    return best;
+}
+setInterval(function() { try { prewarmProxies().catch(function(){}); } catch(e) {} }, 300000);
 
 function getProxyOrder(preferredProxy) {
     var order = [];
@@ -77,7 +85,9 @@ function getProxyOrder(preferredProxy) {
         if (order.indexOf(i) === -1) remaining.push(i);
     }
     remaining.sort(function(a, b) {
-        return (_proxyFailCount[a] || 0) - (_proxyFailCount[b] || 0);
+        var d = (_proxyFailCount[a] || 0) - (_proxyFailCount[b] || 0);
+        if (d !== 0) return d;
+        return (_proxyLatency[a] || 0) - (_proxyLatency[b] || 0);
     });
     return order.concat(remaining);
 }
@@ -105,7 +115,7 @@ async function proxiedFetch(kickPath, options) {
 
     var fullUrl = KICK_BASE + kickPath;
     var lastError = null;
-    var lastRes = null;
+    var lastBad = null;
 
     var order = getProxyOrder(preferredProxy);
 
@@ -120,10 +130,15 @@ async function proxiedFetch(kickPath, options) {
                 fetch(url, opts),
                 new Promise(function(_, reject) { setTimeout(function(){ reject(new Error('timeout')); }, timeout); })
             ]);
-            if (options.requireOk && !res.ok && res.status !== 404 && pi < order.length - 1) {
+            var ct = '';
+            try { ct = (res.headers.get('content-type') || '').toLowerCase(); } catch(e2) {}
+            var proxyBroken = (res.status >= 500) ||
+                (!res.ok && ct.indexOf('json') === -1 && res.status !== 404) ||
+                (res.status === 429 && ct.indexOf('json') === -1);
+            if (proxyBroken) {
                 _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
-                lastError = new Error('HTTP ' + res.status);
-                lastRes = { res: res, proxyUsed: p };
+                lastError = new Error('HTTP ' + res.status + ' (proxy)');
+                lastBad = { res: res, proxyUsed: p };
                 continue;
             }
             _bestProxy = p;
@@ -136,7 +151,7 @@ async function proxiedFetch(kickPath, options) {
             continue;
         }
     }
-    if (lastRes) return lastRes;
+    if (lastBad) return lastBad;
     throw lastError || new Error('فشل الاتصال — تحقق من الإنترنت');
 }
 
