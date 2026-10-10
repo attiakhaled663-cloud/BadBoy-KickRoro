@@ -1549,7 +1549,40 @@ async function fetchChatroomId(slug, acc) {
     return null;
 }
 
+var _liveCache = {}, _liveInflight = null;
+function _allSlugVariants() {
+    var out = [];
+    try {
+        accounts.forEach(function(a){ (a.channels || []).forEach(function(c){
+            out.push(c.slug);
+            if (c.slug.indexOf('-') !== -1) out.push(c.slug.replace(/-/g, '_'));
+            if (c.slug.indexOf('_') !== -1) out.push(c.slug.replace(/_/g, '-'));
+        }); });
+    } catch (e) {}
+    return out;
+}
+async function _refreshLiveCache(extra) {
+    if (_liveInflight) return _liveInflight;
+    _liveInflight = (async function() {
+        try {
+            var list = _allSlugVariants().concat(extra || []);
+            var res = await kickLiveBatchOfficial(list);
+            var now = Date.now();
+            Object.keys(res).forEach(function(k){ _liveCache[k] = { v: res[k], t: now }; });
+        } catch (e) {}
+        finally { _liveInflight = null; }
+    })();
+    return _liveInflight;
+}
+
 async function checkChannelLive(slug, acc) {
+    var _ck = _slugLoose(slug);
+    var _c = _liveCache[_ck];
+    if (!_c || Date.now() - _c.t > 20000) {
+        await _refreshLiveCache([slug]);
+        _c = _liveCache[_ck];
+    }
+    if (_c && Date.now() - _c.t <= 20000) return _c.v;
     try {
         var _vs = [slug];
         if (slug.indexOf('-') !== -1) _vs.push(slug.replace(/-/g, '_'));
@@ -1641,7 +1674,8 @@ async function pollChannelsLiveStatus(b) {
                 if (c.slug.indexOf('-') !== -1) _pl.push(c.slug.replace(/-/g, '_'));
                 if (c.slug.indexOf('_') !== -1) _pl.push(c.slug.replace(/_/g, '-'));
             });
-            official = await kickLiveBatchOfficial(_pl); } catch (e) { official = {}; }
+            official = await kickLiveBatchOfficial(_pl);
+            Object.keys(official).forEach(function(k){ _liveCache[k] = { v: official[k], t: Date.now() }; }); } catch (e) { official = {}; }
         for (var i = 0; i < chans.length; i++) {
             var key = _slugLoose(chans[i].slug);
             if (Object.prototype.hasOwnProperty.call(official, key)) chans[i].isLive = official[key];
@@ -4761,7 +4795,7 @@ function renderChannelsList(b) {
 
         var safeSlug = ch.slug.replace(/'/g, "\\'");
         html += '<div class="' + cardCls + '" data-slug="' + escH(ch.slug) + '">';
-        html += '<div class="channel-status ' + statusCls + '">' + statusText + '</div>';
+        html += '<div class="channel-status ' + statusCls + '" title="' + escH(ch.error || '') + '">' + statusText + '</div>';
         html += '<div style="flex:1;min-width:0">';
         var liveDotCls = ch.isLive === true ? 'live' : (ch.isLive === false ? 'off' : '');
         html += '<div class="channel-name">' + escH(ch.slug) + '<span class="channel-live-dot ' + liveDotCls + '" title="' + (ch.isLive === true ? 'مباشر' : (ch.isLive === false ? 'غير مباشر' : 'غير معروف')) + '"></span></div>';
@@ -5495,7 +5529,8 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
         }
         if (live === null) {
             unknownStreak++;
-            if (ch.isLive === true && unknownStreak < 3) return true;
+            if (ch.isLive === true && unknownStreak < 6) return true;
+            if (ch.isLive !== false) return true; // unknown != offline
             live = false;
         } else {
             unknownStreak = 0;
@@ -5520,8 +5555,9 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
         requestUIUpdate();
         while (bot.isSending) {
             if (ch.enabled === false) { ch.status = 'idle'; requestUIUpdate(); return false; }
-            try { await delay(30000, sig()); } catch(aborted) { return false; }
+            try { await delay(10000, sig()); } catch(aborted) { return false; }
             var live = await checkChannelLive(slug, bot);
+            if (live === null && ch.isLive === true) live = true;
             if (live === true) {
                 ch.isLive = true;
                 ch.status = 'on';
