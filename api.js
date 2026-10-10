@@ -1,23 +1,9 @@
-/* ============================================================
-   api.js — نسخة التطبيق (بدون أي بروكسيات CORS)
-   ------------------------------------------------------------
-   ما تغيّر: أُزيلت كل البروكسيات (codetabs / corsproxy.org /
-   corsfix / allorigins / worker / corsproxy.io) وأصبح كل طلب
-   يذهب مباشرة إلى https://kick.com بنفس الترويسات ونفس شكل
-   المُخرجات تماماً: { res, proxyUsed } مع proxyUsed = -1 دائماً.
-   نفس أسماء الدوال: proxiedFetch / fetchXsrf / refreshXsrf /
-   sendMessage — حتى يعمل كود الواجهة بدون أي تعديل في الاستدعاءات.
-   ============================================================ */
-
 var KICK_BASE = 'https://kick.com';
 var $ = function(id) { return document.getElementById(id); };
 
-/* عنصر قديم باقٍ فقط لأن كود الواجهة يقرأ/يكتب عنده عند تصدير
-   واستيراد الإعدادات — لا علاقة له بأي بروكسي الآن. */
 var _bestProxy = -1;
 function saveBestProxy() {}
 
-/* عدّاد فشل قديم ما زال كود الواجهة يكتب فيه — لا أثر له بدون بروكسيات */
 var _proxyFailCount = {};
 
 var xsrfToken = '';
@@ -29,7 +15,6 @@ function detectMode() {
     } catch(e) { isDirectMode = false; }
 }
 
-/* fetch مع مهلة زمنية حقيقية (يُلغي الطلب عند انتهاء المهلة) */
 async function fetchWithTimeout(url, opts, timeout) {
     timeout = timeout || 8000;
     if (typeof AbortController === 'undefined') {
@@ -47,7 +32,6 @@ async function fetchWithTimeout(url, opts, timeout) {
     } finally { clearTimeout(timer); }
 }
 
-/* نفس اسم الدالة القديمة ونفس شكل الإرجاع — لكن الطلب مباشر بلا وسيط */
 async function proxiedFetch(kickPath, options) {
     options = options || {};
     var method = options.method || 'GET';
@@ -72,7 +56,6 @@ async function proxiedFetch(kickPath, options) {
     return { res: res, proxyUsed: -1 };
 }
 
-/* قراءة كوكي (تفيد في وضع kick.com المباشر فقط) */
 function _readCookie(name) {
     try {
         var parts = String(document.cookie || '').split(';');
