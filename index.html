@@ -1551,7 +1551,10 @@ async function fetchChatroomId(slug, acc) {
 
 async function checkChannelLive(slug, acc) {
     try {
-        var off = await kickLiveBatchOfficial([slug]);
+        var _vs = [slug];
+        if (slug.indexOf('-') !== -1) _vs.push(slug.replace(/-/g, '_'));
+        if (slug.indexOf('_') !== -1) _vs.push(slug.replace(/_/g, '-'));
+        var off = await kickLiveBatchOfficial(_vs);
         var ok = _slugLoose(slug);
         if (Object.prototype.hasOwnProperty.call(off, ok)) return off[ok];
     } catch (e) {}
@@ -1583,7 +1586,6 @@ async function _checkChannelLiveOne(slug, acc) {
                     return true;
                 }
                 if (dd.is_live !== undefined) return dd.is_live === true;
-                if (dd.slug || dd.id || dd.user) return false;
                 return null;
             }
         }
@@ -1614,7 +1616,7 @@ async function kickLiveBatchOfficial(slugs) {
                     for (var k = 0; k < list.length; k++) {
                         var it = list[k];
                         if (!it || !it.slug) continue;
-                        out[_slugLoose(it.slug)] = !!(it.stream && it.stream.is_live === true);
+                        out[_slugLoose(it.slug)] = !!out[_slugLoose(it.slug)] || !!(it.stream && it.stream.is_live === true);
                     }
                 }
                 break;
@@ -1633,7 +1635,13 @@ async function pollChannelsLiveStatus(b) {
         var pending = [];
 
         var official = {};
-        try { official = await kickLiveBatchOfficial(chans.map(function(c){ return c.slug; })); } catch (e) { official = {}; }
+        try { var _pl = [];
+            chans.forEach(function(c){
+                _pl.push(c.slug);
+                if (c.slug.indexOf('-') !== -1) _pl.push(c.slug.replace(/-/g, '_'));
+                if (c.slug.indexOf('_') !== -1) _pl.push(c.slug.replace(/_/g, '-'));
+            });
+            official = await kickLiveBatchOfficial(_pl); } catch (e) { official = {}; }
         for (var i = 0; i < chans.length; i++) {
             var key = _slugLoose(chans[i].slug);
             if (Object.prototype.hasOwnProperty.call(official, key)) chans[i].isLive = official[key];
@@ -5654,6 +5662,7 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
             return msgSentLocal ? 'sent' : 'failed';
         }
 
+        var _iterStart = Date.now();
         var r1 = await sendOneMessage();
         if (r1 === 'exit') return;
         var msgSent = (r1 === 'sent');
@@ -5683,7 +5692,7 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
             var isLastRound = (!infinite && roundNum >= repeatCount - 1);
             if (!(isLastInRound && isLastRound)) {
                 var waitSec = getDelay();
-                var totalWaitMs = waitSec * 1000;
+                var totalWaitMs = Math.max(250, waitSec * 1000 - (Date.now() - _iterStart));
                 var chunkMs = 30000;
                 var waitedMs = 0;
                 while (waitedMs < totalWaitMs && bot.isSending) {
@@ -6033,7 +6042,11 @@ function clearRunningState() {
 function SetupPersistence() {
     var origStartBotLoop = startBotLoop;
     startBotLoop = async function(bot) {
-        await origStartBotLoop(bot);
+        WakeLockMgr.request();
+        saveRunningState();
+        var _p = origStartBotLoop(bot);
+        setTimeout(function(){ if (WakeLockMgr.anyBotRunning()) { saveRunningState(); showKeepAliveBadge(true); } }, 500);
+        await _p;
         if (WakeLockMgr.anyBotRunning()) {
             WakeLockMgr.request();
             saveRunningState();
