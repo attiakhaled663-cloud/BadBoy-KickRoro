@@ -1,0 +1,39 @@
+<div class="app-header">
+    <div class="logo-img" style="background:url('https://raw.githubusercontent.com/attiakhaled663-cloud/BadBoy-KickRoro/refs/heads/main/RedKick_files/ab46995c-be54-4f0c-97d9-dc9965e3150b.png') center/cover no-repeat;border-radius:50%;outline:none;border:2px solid #000;box-shadow:0 0 0 2px #000,0 0 8px rgba(83,252,24,.05)"></div>
+    <div style="flex:1">
+        <div class="app-name">BadBoy Kick</div>
+        <div class="app-tagline">البوتات</div>
+    </div>
+    <button class="btn btn-ghost btn-xs" onclick="openTransferModal()" title="نقل البيانات بين الأجهزة" style="flex-shrink:0"><i class="fas fa-share-nodes"></i></button>
+    <button class="btn btn-ghost btn-xs token-check-btn" onclick="openTokenCheck()" title="فحص حالة التوكنات" aria-label="فحص حالة التوكنات" style="flex-shrink:0">🔍</button>
+    <button class="btn btn-fire btn-xs" onclick="openQuickSend()" title="إرسال رسالة مباشرة" style="flex-shrink:0"><i class="fas fa-paper-plane"></i></button>
+    <div class="header-toggle" onclick="toggleSendToNonLive()" title="عند التفعيل: ترسل لكل القنوات (مباشر وغير مباشر). عند الإيقاف: ترسل فقط للبث المباشر">
+        <i class="fas fa-tower-broadcast" style="color:var(--accent);font-size:10px"></i>
+        <span class="ht-label">غير مباشر</span>
+        <div class="toggle" id="tgSendNonLive"></div>
+    </div>
+    <button class="btn btn-ghost btn-xs" onclick="openExemptModal()" title="استثناء قنوات — تُرسل لها الرسائل دائماً في كل حالاتها، حتى لو كان بثّها موقوفاً" style="flex-shrink:0;position:relative">
+        <i class="fas fa-star"></i>
+        <span id="exemptBadge" style="display:none;position:absolute;top:-5px;left:-5px;min-width:15px;height:15px;border-radius:8px;background:var(--accent);color:#000;font-size:9px;font-weight:900;align-items:center;justify-content:center;padding:0 3px"></span>
+    </button>
+</div>
+
+<div class="bot-list" id="botList"></div>
+
+<div class="selection-info" id="selectionInfo">المحدد: <span class="count">0</span> بوت (0 جاهز)</div>
+
+<div class="bulk-bar">
+    <button class="btn btn-fire" id="btnBulkStart" onclick="toggleBulkRun()"><i class="fas fa-play"></i> تشغيل المحددة</button>
+</div>
+
+<div class="secondary-actions">
+    <button class="btn btn-ghost btn-sm" onclick="selectAllBots()"><i class="fas fa-check-double"></i> تحديد الكل</button>
+    <button class="btn btn-ghost btn-sm" onclick="clearSelection()" id="btnClearSel"><i class="fas fa-xmark"></i> مسح التحديد</button>
+    <button class="btn btn-ghost btn-sm" onclick="goAddToken()"><i class="fas fa-plus"></i> إضافة</button>
+</div>
+
+<div class="progress-wrap" id="progWrap" style="display:none;margin-top:14px">
+    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+    <div class="progress-info"><span id="progCount">0/0</span><span id="progTime">--</span></div>
+</div>
+    
