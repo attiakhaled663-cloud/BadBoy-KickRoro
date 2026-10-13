@@ -3,11 +3,8 @@
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BadBoy Kick</title>
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/attiakhaled663-cloud/BadBoy-Kick/refs/heads/main/RedKick_files/ab46995c-be54-4f0c-97d9-dc9965e3150b.png">
+    <link rel="icon" type="image/png" href="./RedKick_files/ab46995c-be54-4f0c-97d9-dc9965e3150b.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script>
-    window.$ = window.$ || function(id){ return document.getElementById(id); };
-    </script>
     <script>
     (function(){
         window.__silentAlert = function(){};
@@ -46,120 +43,56 @@
     })();
     </script>
     <script>
-/* ═══════════════════════════════════════════════════════════
-   BadBoy Kick — api.js
-   طبقة الشبكة + دالة إرسال الرسائل (مفصولة عن index.html)
-   يُحمَّل هذا الملف داخل index.html عبر:
-   <script src="api.js"><\/script>
-   ويجب أن يوضع قبل السكربت الرئيسي في الصفحة
-
-   ✅ محدَّث 2026-10-13: 6 بروكسيات (حية ومفحوصة) + وضع direct
-   ─ اختُبرت جميع البروكسيات الـ12 القديمة لايف، وشِيل الـ6 الميتة منها
-   ─ المتبقية تردّ من السيرفرات (429/403 من أي بي داتا سنتر) لكنها تنجح من متصفح المستخدم
-   ─ ملحوظة: corsproxy.io وcorsfix بقت تشترط مفتاح/تسجيل — مسجلة بالتعليقات تحت
-   ═══════════════════════════════════════════════════════════ */
+/* ============================================================
+   api.js — نسخة التطبيق (بدون أي بروكسيات CORS)
+   ------------------------------------------------------------
+   ما تغيّر: أُزيلت كل البروكسيات (codetabs / corsproxy.org /
+   corsfix / allorigins / worker / corsproxy.io) وأصبح كل طلب
+   يذهب مباشرة إلى https://kick.com بنفس الترويسات ونفس شكل
+   المُخرجات تماماً: { res, proxyUsed } مع proxyUsed = -1 دائماً.
+   نفس أسماء الدوال: proxiedFetch / fetchXsrf / refreshXsrf /
+   sendMessage — حتى يعمل كود الواجهة بدون أي تعديل في الاستدعاءات.
+   ============================================================ */
 
 var KICK_BASE = 'https://kick.com';
 var $ = function(id) { return document.getElementById(id); };
 
-// ═══════════════════════════════════════
-//  البروكسي — 6 بروكسيات حية + direct
-//  (direct لازم يفضل آخر عنصر في المصفوفة دايماً)
-//
-//  🗑️ المشيلة (اختبار لايف 2026-10-13):
-//   corsproxy.org    → 301 تحويل لموقع تاني (مش بروكسي خالص)
-//   codetabs         → ما بيرد نهائياً (انقطاع اتصال)
-//   allorigins       → ما بيرد نهائياً (انقطاع اتصال)
-//   corsproxy.io-legacy → 401 صار يشترط مفتاح API مدفوع
-//   cors.sh          → ما بيرد نهائياً
-//   cors-anywhere    → 502 ميت
-//
-var PROXIES = [
-    // ── الحية (مفحوصة 2026-10-13) ──
-    // corsproxy.io: 403 من السيرفر — صار يشترط مفتاح API مجاني من لوحة corsproxy.io
-    // حط مفتاحك بين علامتي التنصيص تحت لو عندك واحد (اختياري)
-    { name:'corsproxy.io', build:function(u){return 'https://api.corsproxy.io/?url='+encodeURIComponent(u);}, canPost:true, headers:{ 'x-api-key':'' } },
-    // corsfix: 400/403 من السيرفر — يشترط تسجيل دومين موقعك من corsfix.com (مجاني للدومين المحلي)
-    { name:'corsfix', build:function(u){return 'https://proxy.corsfix.com/?'+u;}, canPost:true },
-    // cors-worker: 429 من السيرفر (محدود الطلبات) — شغال من المتصفح
-    { name:'cors-worker', build:function(u){return 'https://test.cors.workers.dev/?'+u;}, canPost:true },
-    // cors.lol: 429 من السيرفر (محدود الطلبات) — شغال من المتصفح
-    { name:'cors.lol', build:function(u){return 'https://api.cors.lol/?url='+encodeURIComponent(u);}, canPost:true },
-    // cors.eu.org: 429 مع صفحة Cloudflare من السيرفر — شغال من المتصفح غالباً
-    { name:'cors.eu.org', build:function(u){return 'https://cors.eu.org/'+u;}, canPost:true },
-    // cors.x2u.in: 200 لكن ردّ بصفحته من السيرفر — من المتصفح بيرّجع الـAPI عادة
-    { name:'cors.x2u.in', build:function(u){return 'https://cors.x2u.in/?url='+encodeURIComponent(u);}, canPost:true },
-    { name:'direct', build:function(u){return u;}, canPost:true }
-];
+/* عنصر قديم باقٍ فقط لأن كود الواجهة يقرأ/يكتب عنده عند تصدير
+   واستيراد الإعدادات — لا علاقة له بأي بروكسي الآن. */
+var _bestProxy = -1;
+function saveBestProxy() {}
 
-var activeProxy = 0;
+/* عدّاد فشل قديم ما زال كود الواجهة يكتب فيه — لا أثر له بدون بروكسيات */
+var _proxyFailCount = {};
+
 var xsrfToken = '';
 var isDirectMode = false;
 
 function detectMode() {
-    try { isDirectMode = window.location.hostname === 'kick.com' || window.location.hostname.endsWith('.kick.com'); } catch(e) { isDirectMode=false; }
-    if (isDirectMode) activeProxy = PROXIES.length - 1;
-}
-
-var _bestProxy = -1;
-var _proxyFailCount = {};
-
-// رُفع لـ v4 لأن عدد البروكسيات نقص من 12 لـ6 — لو فضلنا v3 هيفضل يحفظ اندكس قديم غلط
-var BEST_PROXY_KEY = 'redkick_best_proxy_v4';
-
-function loadBestProxy() {
     try {
-        var v = parseInt(localStorage.getItem(BEST_PROXY_KEY));
-        if (!isNaN(v) && v >= 0 && v < PROXIES.length) _bestProxy = v;
-    } catch(e) {}
+        isDirectMode = window.location.hostname === 'kick.com' || window.location.hostname.endsWith('.kick.com');
+    } catch(e) { isDirectMode = false; }
 }
-function saveBestProxy() {
+
+/* fetch مع مهلة زمنية حقيقية (يُلغي الطلب عند انتهاء المهلة) */
+async function fetchWithTimeout(url, opts, timeout) {
+    timeout = timeout || 8000;
+    if (typeof AbortController === 'undefined') {
+        return await Promise.race([
+            fetch(url, opts),
+            new Promise(function(_, reject) { setTimeout(function() { reject(new Error('timeout')); }, timeout); })
+        ]);
+    }
+    var ctrl = new AbortController();
+    var timer = setTimeout(function() { try { ctrl.abort(); } catch(e) {} }, timeout);
     try {
-        if (_bestProxy >= 0) localStorage.setItem(BEST_PROXY_KEY, String(_bestProxy));
-    } catch(e) {}
+        var o = Object.assign({}, opts);
+        o.signal = ctrl.signal;
+        return await fetch(url, o);
+    } finally { clearTimeout(timer); }
 }
 
-async function prewarmProxies() {
-    var testSlug = 'kick';
-    var candidates = [];
-    if (_bestProxy >= 0) candidates.push(_bestProxy);
-    for (var i = 0; i < PROXIES.length; i++) {
-        if (candidates.indexOf(i) === -1) candidates.push(i);
-    }
-    for (var pi = 0; pi < candidates.length; pi++) {
-        var p = candidates[pi];
-        try {
-            var res = await Promise.race([
-                fetch(PROXIES[p].build(KICK_BASE + '/api/v2/channels/' + testSlug), {method:'GET'}),
-                new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, 4000); })
-            ]);
-            if (res && res.ok) {
-                _bestProxy = p;
-                _proxyFailCount[p] = 0;
-                saveBestProxy();
-                return p;
-            }
-        } catch(e) {
-            _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
-        }
-    }
-    return -1;
-}
-
-function getProxyOrder(preferredProxy) {
-    var order = [];
-    if (preferredProxy !== undefined && preferredProxy >= 0) order.push(preferredProxy);
-    if (_bestProxy >= 0 && order.indexOf(_bestProxy) === -1) order.push(_bestProxy);
-    var remaining = [];
-    for (var i = 0; i < PROXIES.length; i++) {
-        if (order.indexOf(i) === -1) remaining.push(i);
-    }
-    remaining.sort(function(a, b) {
-        return (_proxyFailCount[a] || 0) - (_proxyFailCount[b] || 0);
-    });
-    return order.concat(remaining);
-}
-
+/* نفس اسم الدالة القديمة ونفس شكل الإرجاع — لكن الطلب مباشر بلا وسيط */
 async function proxiedFetch(kickPath, options) {
     options = options || {};
     var method = options.method || 'GET';
@@ -168,8 +101,6 @@ async function proxiedFetch(kickPath, options) {
     var timeout = options.timeout || 8000;
     var skipAuth = options.skipAuth || false;
     var token = options.token || '';
-    var preferredProxy = options.preferredProxy;
-    var requireOk = options.requireOk || false;
     var isPost = (method !== 'GET');
 
     var defHeaders = { 'Accept':'application/json' };
@@ -179,48 +110,23 @@ async function proxiedFetch(kickPath, options) {
     if (xsrfToken) defHeaders['X-XSRF-TOKEN'] = xsrfToken;
     for (var k in headers) defHeaders[k] = headers[k];
 
-    var fetchOpts = { method:method, headers:defHeaders, credentials:isDirectMode?'include':'omit' };
+    var fetchOpts = { method:method, headers:defHeaders, credentials:isDirectMode ? 'include' : 'omit' };
     if (body && isPost) fetchOpts.body = JSON.stringify(body);
 
-    var fullUrl = KICK_BASE + kickPath;
-    var lastError = null;
-    var lastBad = null; // ✅ آخر ردّ غير ناجح (يُستخدم مع requireOk)
+    var res = await fetchWithTimeout(KICK_BASE + kickPath, fetchOpts, timeout);
+    return { res: res, proxyUsed: -1 };
+}
 
-    var order = getProxyOrder(preferredProxy);
-
-    for (var pi = 0; pi < order.length; pi++) {
-        var p = order[pi];
-        if (isPost && !PROXIES[p].canPost) continue;
-        var url = PROXIES[p].build(fullUrl);
-        var opts = Object.assign({}, fetchOpts);
-        opts.credentials = (isDirectMode && p === PROXIES.length-1) ? 'include' : 'omit';
-        // ✅ دعم هيدرز خاصة بكل بروكسي (مثل x-cors-api-key الخاص بـ cors.sh)
-        if (PROXIES[p].headers) {
-            opts.headers = Object.assign({}, defHeaders, PROXIES[p].headers);
+/* قراءة كوكي (تفيد في وضع kick.com المباشر فقط) */
+function _readCookie(name) {
+    try {
+        var parts = String(document.cookie || '').split(';');
+        for (var i = 0; i < parts.length; i++) {
+            var p = parts[i].trim();
+            if (p.indexOf(name + '=') === 0) return decodeURIComponent(p.substring(name.length + 1));
         }
-        try {
-            var res = await Promise.race([
-                fetch(url, opts),
-                new Promise(function(_, reject) { setTimeout(function(){ reject(new Error('timeout')); }, timeout); })
-            ]);
-            // ✅ requireOk: ردّ 403/429/5xx من البروكسي لا يُعتبر نجاحاً — جرّب بروكسي آخر
-            if (requireOk && !res.ok) {
-                _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
-                lastBad = { res: res, proxyUsed: p };
-                continue;
-            }
-            _bestProxy = p;
-            _proxyFailCount[p] = 0;
-            saveBestProxy();
-            return { res: res, proxyUsed: p };
-        } catch(e) {
-            _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
-            lastError = e;
-            continue;
-        }
-    }
-    if (lastBad) return lastBad;
-    throw lastError || new Error('فشل الاتصال — تحقق من الإنترنت');
+    } catch(e) {}
+    return '';
 }
 
 async function fetchXsrf() {
@@ -238,60 +144,55 @@ async function fetchXsrf() {
             if (m) { xsrfToken=m[1]; return; }
         }
     } catch(e){}
+    var c = _readCookie('XSRF-TOKEN');
+    if (c) xsrfToken = c;
 }
 
 async function refreshXsrf() { xsrfToken=''; await fetchXsrf(); }
 
-// ═══════════════════════════════════════
-//  إرسال رسالة
-// ═══════════════════════════════════════
 async function sendMessage(chatroomId, content, token, preferredProxy) {
     var endpoints = [
         { path:'/api/v2/messages/send/'+chatroomId, body:{content:content, type:'message'} },
         { path:'/api/v1/chat-messages', body:{content:content, chatroom_id:parseInt(chatroomId)} }
     ];
-    var order = getProxyOrder(preferredProxy);
     var lastErr = null;
     var statusCounts = {};
-    var lastDetail = '';
+    var xsrfRefreshed = false;
 
     for (var ei = 0; ei < endpoints.length; ei++) {
         var ep = endpoints[ei];
-        for (var oi = 0; oi < order.length; oi++) {
-            var p = order[oi];
-            if (!PROXIES[p].canPost) continue;
+        for (var attempt = 0; attempt < 2; attempt++) {
             try {
                 var r = await proxiedFetch(ep.path, {
-                    method:'POST', token:token, timeout:10000,
-                    preferredProxy:p, body:ep.body
+                    method:'POST', token:token, timeout:10000, body:ep.body
                 });
-                if (r.res.ok) { return { success:true, proxyUsed:r.proxyUsed }; }
+                if (r.res.ok) { return { success:true, proxyUsed:-1 }; }
                 var st = r.res.status;
-                try {
-                    var _t = await r.res.clone().text();
-                    var _j = null; try { _j = JSON.parse(_t); } catch (je) {}
-                    var _m = _j && (_j.message || (_j.status && _j.status.message) || _j.error);
-                    lastDetail = ('HTTP ' + st + ' ' + (_m ? (typeof _m === 'string' ? _m : JSON.stringify(_m)) : _t.replace(/<[^>]*>/g, ' ').trim())).slice(0, 90);
-                } catch (de) { lastDetail = 'HTTP ' + st; }
-                if (st === 419) { await refreshXsrf(); continue; }
+                if (st === 419) {
+                    if (!xsrfRefreshed) { xsrfRefreshed = true; try { await refreshXsrf(); } catch(e){} continue; }
+                    lastErr = new Error('HTTP 419');
+                    break;
+                }
                 if (st === 401 || st === 403 || st === 429) {
                     statusCounts[st] = (statusCounts[st] || 0) + 1;
                 }
                 lastErr = new Error('HTTP '+st);
+                break;
             } catch(e) {
                 lastErr = e;
+                break;
             }
         }
     }
 
-    var _sfx = lastDetail ? (' — ' + lastDetail) : '';
-    if (statusCounts[429] >= 2) throw new Error('حظر مؤقت' + _sfx);
-    if (statusCounts[403] >= 2) throw new Error('لا صلاحية' + _sfx);
-    if (statusCounts[401] >= 2) throw new Error('توكن منتهي' + _sfx);
+    if (statusCounts[429] >= 2) throw new Error('حظر مؤقت');
+    if (statusCounts[403] >= 2) throw new Error('لا صلاحية');
+    if (statusCounts[401] >= 2) throw new Error('توكن منتهي');
     if (lastErr instanceof TypeError || (lastErr && lastErr.message && lastErr.message.indexOf('Failed to fetch')>=0)) throw new Error('خطأ اتصال');
     throw lastErr || new Error('فشل الإرسال');
 }
-</script>
+
+    </script>
     <style>
         :root {
             --bg: #0a0f08; --fg: #e8ffe0; --muted: #5a7a5a;
@@ -4388,7 +4289,18 @@ async function verifyAndAdd() {
         for (var ei = 0; ei < endpoints.length && (!pr || !pr.res.ok); ei++) {
             try { pr = await proxiedFetch(endpoints[ei], {token:token, timeout:6000}); } catch(e) { continue; }
         }
-        if (!pr) throw new Error('فشل الاتصال — تحققي من الإنترنت');
+        if (!pr) {
+            for (var i0 = 0; i0 < accounts.length; i0++) {
+                if (accounts[i0].token === token) throw new Error('هذا التوكن مضاف مسبقاً');
+            }
+            var bot0 = makeBot(token, 'حساب #' + (accounts.length + 1));
+            accounts.push(bot0);
+            persist();
+            $('inToken').value = '';
+            renderBotList();
+            showPhase('main');
+            return;
+        }
         if (!pr.res.ok) {
             if (pr.res.status===401||pr.res.status===403) throw new Error('التوكن منتهي ');
             throw new Error('خطأ HTTP: '+pr.res.status);
@@ -4445,14 +4357,10 @@ function goAddToken() {
 }
 
 function navBackFromAdd() {
-    if (accounts.length > 0) {
-        renderBotList();
-        showPhase('main');
-    } else {
-        $('inToken').value = '';
-        $('tokenStatus').innerHTML = '';
-        toast('أضف بوتاً واحداً على الأقل للبدء', 'i');
-    }
+    $('inToken').value = '';
+    $('tokenStatus').innerHTML = '';
+    renderBotList();
+    showPhase('main');
 }
 
 function openInfoModal() {
@@ -5047,11 +4955,7 @@ function renderChannelsList(b) {
         html += '<span class="meta-item"><i class="fas fa-clock"></i>' + (ch.interval || 5) + 'ث</span>';
         html += '<span class="meta-item"><i class="fas fa-repeat"></i>' + repeatText + '</span>';
         if (sentText) html += '<span class="meta-item" style="color:#7dffb0">' + sentText + '</span>';
-        html += '</div>';
-        if (isEnabled && ch.error && (status === 'warning' || status === 'off')) {
-            html += '<div style="margin-top:4px;font-size:10px;line-height:1.4;color:#ffd966;word-break:break-word;direction:ltr;text-align:right">' + escH(ch.error) + '</div>';
-        }
-        html += '</div>';
+        html += '</div></div>';
         var toggleCls = 'channel-toggle ' + (isEnabled ? 'on' : 'off');
         html += '<div class="' + toggleCls + '" onclick="toggleChannel(\'' + safeSlug + '\')" title="' + (isEnabled ? 'إطفاء' : 'تشغيل') + '"></div>';
         html += '<div class="channel-actions">';
@@ -5939,7 +5843,7 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                         ch.status = 'warning';
                         ch.error = isCritical ? (e.message+' ('+failCount+')') :
                                       isNetwork ? ('إعادة اتصال ('+failCount+')') :
-                                      ('إعادة ('+failCount+') ' + (e.message || ''));
+                                      ('إعادة ('+failCount+')');
                         requestUIUpdate();
                         try { await delay(backoff, abortControllers[bot.id] ? abortControllers[bot.id].signal : undefined); }
                         catch(aborted) { return 'exit'; }
