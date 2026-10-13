@@ -31,7 +31,7 @@ async function loadCore() {
         document.write(html);
         document.close();
     } catch (e) {
-        if (boot) boot.innerHTML = '<div style="color:#ff3b3b;font-size:15px">تعذّر تحميل التطبيق</div>'
+        if (boot) boot.innerHTML = '<div style="color:#ff3b3b;font-size:15px">تعذّر تحميل القائمة</div>'
             + '<button onclick="loadCore()">إعادة المحاولة</button>';
     }
 }
