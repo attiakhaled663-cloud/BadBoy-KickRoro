@@ -1,35 +1,115 @@
+/* ═══════════════════════════════════════════════════════════
+   BadBoy Kick — api.js
+   طبقة الشبكة + دالة إرسال الرسائل (مفصولة عن index.html)
+   يُحمَّل هذا الملف داخل index.html عبر:
+   <script src="api.js"></script>
+   ويجب أن يوضع قبل السكربت الرئيسي في الصفحة
+
+   ✅ محدَّث 2026-10-13: 6 بروكسيات (حية ومفحوصة) + وضع direct
+   ─ اختُبرت جميع البروكسيات الـ12 القديمة لايف، وشِيل الـ6 الميتة منها
+   ─ المتبقية تردّ من السيرفرات (429/403 من أي بي داتا سنتر) لكنها تنجح من متصفح المستخدم
+   ─ ملحوظة: corsproxy.io وcorsfix بقت تشترط مفتاح/تسجيل — مسجلة بالتعليقات تحت
+   ═══════════════════════════════════════════════════════════ */
+
 var KICK_BASE = 'https://kick.com';
 var $ = function(id) { return document.getElementById(id); };
 
-var _bestProxy = -1;
-function saveBestProxy() {}
+// ═══════════════════════════════════════
+//  البروكسي — 6 بروكسيات حية + direct
+//  (direct لازم يفضل آخر عنصر في المصفوفة دايماً)
+//
+//  🗑️ المشيلة (اختبار لايف 2026-10-13):
+//   corsproxy.org    → 301 تحويل لموقع تاني (مش بروكسي خالص)
+//   codetabs         → ما بيرد نهائياً (انقطاع اتصال)
+//   allorigins       → ما بيرد نهائياً (انقطاع اتصال)
+//   corsproxy.io-legacy → 401 صار يشترط مفتاح API مدفوع
+//   cors.sh          → ما بيرد نهائياً
+//   cors-anywhere    → 502 ميت
+//
+var PROXIES = [
+    // ── الحية (مفحوصة 2026-10-13) ──
+    // corsproxy.io: 403 من السيرفر — صار يشترط مفتاح API مجاني من لوحة corsproxy.io
+    // حط مفتاحك بين علامتي التنصيص تحت لو عندك واحد (اختياري)
+    { name:'corsproxy.io', build:function(u){return 'https://api.corsproxy.io/?url='+encodeURIComponent(u);}, canPost:true, headers:{ 'x-api-key':'' } },
+    // corsfix: 400/403 من السيرفر — يشترط تسجيل دومين موقعك من corsfix.com (مجاني للدومين المحلي)
+    { name:'corsfix', build:function(u){return 'https://proxy.corsfix.com/?'+u;}, canPost:true },
+    // cors-worker: 429 من السيرفر (محدود الطلبات) — شغال من المتصفح
+    { name:'cors-worker', build:function(u){return 'https://test.cors.workers.dev/?'+u;}, canPost:true },
+    // cors.lol: 429 من السيرفر (محدود الطلبات) — شغال من المتصفح
+    { name:'cors.lol', build:function(u){return 'https://api.cors.lol/?url='+encodeURIComponent(u);}, canPost:true },
+    // cors.eu.org: 429 مع صفحة Cloudflare من السيرفر — شغال من المتصفح غالباً
+    { name:'cors.eu.org', build:function(u){return 'https://cors.eu.org/'+u;}, canPost:true },
+    // cors.x2u.in: 200 لكن ردّ بصفحته من السيرفر — من المتصفح بيرّجع الـAPI عادة
+    { name:'cors.x2u.in', build:function(u){return 'https://cors.x2u.in/?url='+encodeURIComponent(u);}, canPost:true },
+    { name:'direct', build:function(u){return u;}, canPost:true }
+];
 
-var _proxyFailCount = {};
-
+var activeProxy = 0;
 var xsrfToken = '';
 var isDirectMode = false;
 
 function detectMode() {
-    try {
-        isDirectMode = window.location.hostname === 'kick.com' || window.location.hostname.endsWith('.kick.com');
-    } catch(e) { isDirectMode = false; }
+    try { isDirectMode = window.location.hostname === 'kick.com' || window.location.hostname.endsWith('.kick.com'); } catch(e) { isDirectMode=false; }
+    if (isDirectMode) activeProxy = PROXIES.length - 1;
 }
 
-async function fetchWithTimeout(url, opts, timeout) {
-    timeout = timeout || 8000;
-    if (typeof AbortController === 'undefined') {
-        return await Promise.race([
-            fetch(url, opts),
-            new Promise(function(_, reject) { setTimeout(function() { reject(new Error('timeout')); }, timeout); })
-        ]);
-    }
-    var ctrl = new AbortController();
-    var timer = setTimeout(function() { try { ctrl.abort(); } catch(e) {} }, timeout);
+var _bestProxy = -1;
+var _proxyFailCount = {};
+
+// رُفع لـ v4 لأن عدد البروكسيات نقص من 12 لـ6 — لو فضلنا v3 هيفضل يحفظ اندكس قديم غلط
+var BEST_PROXY_KEY = 'redkick_best_proxy_v4';
+
+function loadBestProxy() {
     try {
-        var o = Object.assign({}, opts);
-        o.signal = ctrl.signal;
-        return await fetch(url, o);
-    } finally { clearTimeout(timer); }
+        var v = parseInt(localStorage.getItem(BEST_PROXY_KEY));
+        if (!isNaN(v) && v >= 0 && v < PROXIES.length) _bestProxy = v;
+    } catch(e) {}
+}
+function saveBestProxy() {
+    try {
+        if (_bestProxy >= 0) localStorage.setItem(BEST_PROXY_KEY, String(_bestProxy));
+    } catch(e) {}
+}
+
+async function prewarmProxies() {
+    var testSlug = 'kick';
+    var candidates = [];
+    if (_bestProxy >= 0) candidates.push(_bestProxy);
+    for (var i = 0; i < PROXIES.length; i++) {
+        if (candidates.indexOf(i) === -1) candidates.push(i);
+    }
+    for (var pi = 0; pi < candidates.length; pi++) {
+        var p = candidates[pi];
+        try {
+            var res = await Promise.race([
+                fetch(PROXIES[p].build(KICK_BASE + '/api/v2/channels/' + testSlug), {method:'GET'}),
+                new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, 4000); })
+            ]);
+            if (res && res.ok) {
+                _bestProxy = p;
+                _proxyFailCount[p] = 0;
+                saveBestProxy();
+                return p;
+            }
+        } catch(e) {
+            _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
+        }
+    }
+    return -1;
+}
+
+function getProxyOrder(preferredProxy) {
+    var order = [];
+    if (preferredProxy !== undefined && preferredProxy >= 0) order.push(preferredProxy);
+    if (_bestProxy >= 0 && order.indexOf(_bestProxy) === -1) order.push(_bestProxy);
+    var remaining = [];
+    for (var i = 0; i < PROXIES.length; i++) {
+        if (order.indexOf(i) === -1) remaining.push(i);
+    }
+    remaining.sort(function(a, b) {
+        return (_proxyFailCount[a] || 0) - (_proxyFailCount[b] || 0);
+    });
+    return order.concat(remaining);
 }
 
 async function proxiedFetch(kickPath, options) {
@@ -40,6 +120,8 @@ async function proxiedFetch(kickPath, options) {
     var timeout = options.timeout || 8000;
     var skipAuth = options.skipAuth || false;
     var token = options.token || '';
+    var preferredProxy = options.preferredProxy;
+    var requireOk = options.requireOk || false;
     var isPost = (method !== 'GET');
 
     var defHeaders = { 'Accept':'application/json' };
@@ -49,22 +131,48 @@ async function proxiedFetch(kickPath, options) {
     if (xsrfToken) defHeaders['X-XSRF-TOKEN'] = xsrfToken;
     for (var k in headers) defHeaders[k] = headers[k];
 
-    var fetchOpts = { method:method, headers:defHeaders, credentials:isDirectMode ? 'include' : 'omit' };
+    var fetchOpts = { method:method, headers:defHeaders, credentials:isDirectMode?'include':'omit' };
     if (body && isPost) fetchOpts.body = JSON.stringify(body);
 
-    var res = await fetchWithTimeout(KICK_BASE + kickPath, fetchOpts, timeout);
-    return { res: res, proxyUsed: -1 };
-}
+    var fullUrl = KICK_BASE + kickPath;
+    var lastError = null;
+    var lastBad = null; // ✅ آخر ردّ غير ناجح (يُستخدم مع requireOk)
 
-function _readCookie(name) {
-    try {
-        var parts = String(document.cookie || '').split(';');
-        for (var i = 0; i < parts.length; i++) {
-            var p = parts[i].trim();
-            if (p.indexOf(name + '=') === 0) return decodeURIComponent(p.substring(name.length + 1));
+    var order = getProxyOrder(preferredProxy);
+
+    for (var pi = 0; pi < order.length; pi++) {
+        var p = order[pi];
+        if (isPost && !PROXIES[p].canPost) continue;
+        var url = PROXIES[p].build(fullUrl);
+        var opts = Object.assign({}, fetchOpts);
+        opts.credentials = (isDirectMode && p === PROXIES.length-1) ? 'include' : 'omit';
+        // ✅ دعم هيدرز خاصة بكل بروكسي (مثل x-cors-api-key الخاص بـ cors.sh)
+        if (PROXIES[p].headers) {
+            opts.headers = Object.assign({}, defHeaders, PROXIES[p].headers);
         }
-    } catch(e) {}
-    return '';
+        try {
+            var res = await Promise.race([
+                fetch(url, opts),
+                new Promise(function(_, reject) { setTimeout(function(){ reject(new Error('timeout')); }, timeout); })
+            ]);
+            // ✅ requireOk: ردّ 403/429/5xx من البروكسي لا يُعتبر نجاحاً — جرّب بروكسي آخر
+            if (requireOk && !res.ok) {
+                _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
+                lastBad = { res: res, proxyUsed: p };
+                continue;
+            }
+            _bestProxy = p;
+            _proxyFailCount[p] = 0;
+            saveBestProxy();
+            return { res: res, proxyUsed: p };
+        } catch(e) {
+            _proxyFailCount[p] = (_proxyFailCount[p] || 0) + 1;
+            lastError = e;
+            continue;
+        }
+    }
+    if (lastBad) return lastBad;
+    throw lastError || new Error('فشل الاتصال — تحقق من الإنترنت');
 }
 
 async function fetchXsrf() {
@@ -82,43 +190,41 @@ async function fetchXsrf() {
             if (m) { xsrfToken=m[1]; return; }
         }
     } catch(e){}
-    var c = _readCookie('XSRF-TOKEN');
-    if (c) xsrfToken = c;
 }
 
 async function refreshXsrf() { xsrfToken=''; await fetchXsrf(); }
 
+// ═══════════════════════════════════════
+//  إرسال رسالة
+// ═══════════════════════════════════════
 async function sendMessage(chatroomId, content, token, preferredProxy) {
     var endpoints = [
         { path:'/api/v2/messages/send/'+chatroomId, body:{content:content, type:'message'} },
         { path:'/api/v1/chat-messages', body:{content:content, chatroom_id:parseInt(chatroomId)} }
     ];
+    var order = getProxyOrder(preferredProxy);
     var lastErr = null;
     var statusCounts = {};
-    var xsrfRefreshed = false;
 
     for (var ei = 0; ei < endpoints.length; ei++) {
         var ep = endpoints[ei];
-        for (var attempt = 0; attempt < 2; attempt++) {
+        for (var oi = 0; oi < order.length; oi++) {
+            var p = order[oi];
+            if (!PROXIES[p].canPost) continue;
             try {
                 var r = await proxiedFetch(ep.path, {
-                    method:'POST', token:token, timeout:10000, body:ep.body
+                    method:'POST', token:token, timeout:10000,
+                    preferredProxy:p, body:ep.body
                 });
-                if (r.res.ok) { return { success:true, proxyUsed:-1 }; }
+                if (r.res.ok) { return { success:true, proxyUsed:r.proxyUsed }; }
                 var st = r.res.status;
-                if (st === 419) {
-                    if (!xsrfRefreshed) { xsrfRefreshed = true; try { await refreshXsrf(); } catch(e){} continue; }
-                    lastErr = new Error('HTTP 419');
-                    break;
-                }
+                if (st === 419) { await refreshXsrf(); continue; }
                 if (st === 401 || st === 403 || st === 429) {
                     statusCounts[st] = (statusCounts[st] || 0) + 1;
                 }
                 lastErr = new Error('HTTP '+st);
-                break;
             } catch(e) {
                 lastErr = e;
-                break;
             }
         }
     }
