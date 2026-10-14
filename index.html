@@ -156,6 +156,7 @@ async function sendMessage(chatroomId, content, token, preferredProxy) {
         { path:'/api/v1/chat-messages', body:{content:content, chatroom_id:parseInt(chatroomId)} }
     ];
     var lastErr = null;
+    var firstErr = null;   /* أول خطأ حقيقي (لا نخفيه بخطأ الـ fallback) */
     var statusCounts = {};
     var xsrfRefreshed = false;
 
@@ -173,23 +174,34 @@ async function sendMessage(chatroomId, content, token, preferredProxy) {
                     lastErr = new Error('HTTP 419');
                     break;
                 }
-                if (st === 401 || st === 403 || st === 429) {
+                if (st === 429) {
+                    /* حد سرعة مؤقت — ليس حظراً. لا نجرّب endpoint آخر، نرجع فوراً ونترك الحلقة تنتظر ثم تعيد */
+                    var ra = 0;
+                    try { ra = parseInt(r.res.headers.get('Retry-After') || '', 10) || 0; } catch(e){}
+                    var e429 = new Error('حد السرعة');
+                    e429.status = 429; e429.retryAfter = ra;
+                    throw e429;
+                }
+                if (st === 401 || st === 403) {
                     statusCounts[st] = (statusCounts[st] || 0) + 1;
                 }
                 lastErr = new Error('HTTP '+st);
+                if (!firstErr) firstErr = lastErr;
                 break;
             } catch(e) {
+                if (e && e.status === 429) throw e;
                 lastErr = e;
+                if (!firstErr) firstErr = e;
                 break;
             }
         }
     }
 
-    if (statusCounts[429] >= 2) throw new Error('حظر مؤقت');
     if (statusCounts[403] >= 2) throw new Error('لا صلاحية');
     if (statusCounts[401] >= 2) throw new Error('توكن منتهي');
-    if (lastErr instanceof TypeError || (lastErr && lastErr.message && lastErr.message.indexOf('Failed to fetch')>=0)) throw new Error('خطأ اتصال');
-    throw lastErr || new Error('فشل الإرسال');
+    var fe = firstErr || lastErr;
+    if (fe instanceof TypeError || (fe && fe.message && fe.message.indexOf('Failed to fetch')>=0)) throw new Error('خطأ اتصال');
+    throw fe || new Error('فشل الإرسال');
 }
 
     </script>
@@ -5795,9 +5807,10 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                 ch.status = 'on';
             }
 
-            var msgSentLocal = false, failCount = 0, lastErr = null;
+            var msgSentLocal = false, failCount = 0, lastErr = null, rateHits = 0;
             while (!msgSentLocal && bot.isSending) {
                 if (!infinite && failCount >= MAX_SEND_RETRIES) break;
+                if (rateHits >= 30) break;
                 try {
                     var result = await sendMessage(cid, currentMsg, bot.token, bot.workingSendProxy);
                     if (result.proxyUsed >= 0) bot.workingSendProxy = result.proxyUsed;
@@ -5808,9 +5821,10 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                     ch.error = '';
                     requestUIUpdate();
                 } catch(e) {
-                    failCount++;
+                    var isRate = (e && e.status === 429) || (e && e.message && e.message.indexOf('حد السرعة')>=0);
+                    if (isRate) { rateHits++; } else { failCount++; }
                     lastErr = e;
-                    var isCritical = e.message.indexOf('حظر')>=0 || e.message.indexOf('صلاحية')>=0 || e.message.indexOf('منتهي')>=0;
+                    var isCritical = !isRate && (e.message.indexOf('حظر')>=0 || e.message.indexOf('صلاحية')>=0 || e.message.indexOf('منتهي')>=0);
                     var isNetwork = (e instanceof TypeError) || e.message.indexOf('Failed to fetch')>=0 || e.message==='timeout';
 
                     if (isCritical && !infinite) throw e;
@@ -5832,6 +5846,8 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                             }
                             if (!bot.isSending) return 'exit';
                             continue;
+                        } else if (isRate) {
+                            backoff = Math.min(Math.max(((e.retryAfter || 0) * 1000), 3000 + rateHits * 1000), 30000);
                         } else if (isCritical) {
                             backoff = Math.min(5000 + (failCount * 1500), 30000);
                             if (failCount === 1) toast('('+bot.username+' → '+slug+') '+e.message+' — إعادة خلال '+Math.round(backoff/1000)+'ث', 'i');
@@ -5841,7 +5857,7 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                             backoff = RETRY_DELAY + Math.min(failCount * 200, 2000);
                         }
                         ch.status = 'warning';
-                        ch.error = isCritical ? (e.message+' ('+failCount+')') :
+                        ch.error = isRate ? ('حد السرعة — انتظار ('+rateHits+')') : isCritical ? (e.message+' ('+failCount+')') :
                                       isNetwork ? ('إعادة اتصال ('+failCount+')') :
                                       ('إعادة ('+failCount+')');
                         requestUIUpdate();
@@ -5878,7 +5894,7 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
             }
         }
 
-        if (bot.isSending && msgSent) {
+        if (bot.isSending) {
             var isLastInRound = (sentInRound >= msgs.length);
             var isLastRound = (!infinite && roundNum >= repeatCount - 1);
             if (!(isLastInRound && isLastRound)) {
