@@ -1905,6 +1905,34 @@ async function tryFetchWithAllProxies(kickPath, options) {
     return { ok: false, notFound: false };
 }
 
+/* يجرّب كل صيغ اسم القناة (الأصلي / بشرطة - / بشرطة سفلية _) لجلب chatroom id.
+   الإصلاح: القنوات اللي اسمها فيه _ (مثل drx_gaming) كانت بتفضل على "!" لأن الصيغة بـ - ماكانتش بتتجرب إلا لو الرد 404 بالظبط. */
+async function resolveChatroomAllVariants(slug, bot) {
+    var variants = [slug];
+    if (slug.indexOf('_') !== -1) variants.push(slug.replace(/_/g, '-'));
+    if (slug.indexOf('-') !== -1) variants.push(slug.replace(/-/g, '_'));
+    var seen = {}, list = [];
+    variants.forEach(function(v){ if (!seen[v]) { seen[v] = 1; list.push(v); } });
+    var notFoundCount = 0;
+    for (var i = 0; i < list.length; i++) {
+        try {
+            var v1 = await verifyChannelComprehensive(list[i], bot);
+            if (v1.ok && v1.chatroomId) return { id: v1.chatroomId, notFound: false };
+            if (v1.reason === 'not_found') notFoundCount++;
+        } catch (e) {}
+        try {
+            var cd = await fetchChannel(list[i], bot);
+            var c1 = extractChatroomId(cd);
+            if (c1) return { id: c1, notFound: false };
+        } catch (e) { if (e && e.message === 'NOT_FOUND') notFoundCount++; }
+        try {
+            var c2 = await fetchChatroomId(list[i], bot);
+            if (c2) return { id: c2, notFound: false };
+        } catch (e) {}
+    }
+    return { id: null, notFound: notFoundCount >= list.length };
+}
+
 async function verifyChannelComprehensive(slug, bot) {
     slug = slug.trim().toLowerCase().replace(/^\/+|\/+$/g, '').replace(/\s+/g, '');
     if (!slug) return { ok: false, reason: 'empty' };
@@ -4962,6 +4990,7 @@ function renderChannelsList(b) {
         html += '<div style="flex:1;min-width:0">';
         var liveDotCls = ch.isLive === true ? 'live' : (ch.isLive === false ? 'off' : '');
         html += '<div class="channel-name">' + escH(ch.slug) + '<span class="channel-live-dot ' + liveDotCls + '" title="' + (ch.isLive === true ? 'مباشر' : (ch.isLive === false ? 'غير مباشر' : 'غير معروف')) + '"></span></div>';
+        if (isEnabled && (status === 'warning' || status === 'off') && ch.error) html += '<div style="font-size:10px;color:#ffd966;margin:2px 0">' + escH(ch.error) + '</div>';
         html += '<div class="channel-meta">';
         html += '<span class="meta-item"><i class="fas fa-comment"></i>' + msgCount + ' رسالة</span>';
         html += '<span class="meta-item"><i class="fas fa-clock"></i>' + (ch.interval || 5) + 'ث</span>';
@@ -5593,25 +5622,16 @@ async function runChannelOnce(bot, ch, eff, msgs, interval, infinite, repeatCoun
                 var ckey = slug.replace(/_/g, '-');
                 cid = _chatroomCache[ckey] || null;
                 if (!cid) {
-                    var vResult = await verifyChannelComprehensive(slug, bot);
-                    if (vResult.ok) {
-                        cid = vResult.chatroomId;
-                    } else if (vResult.reason === 'not_found') {
-                        var alt = slug.indexOf('_') !== -1 ? slug.replace(/_/g, '-') : (slug.indexOf('-') !== -1 ? slug.replace(/-/g, '_') : null);
-                        if (alt) {
-                            var vAlt = await verifyChannelComprehensive(alt, bot);
-                            if (vAlt.ok) cid = vAlt.chatroomId;
-                        }
-                        if (!cid) {
-                            ch.status = 'off';
-                            ch.error = 'القناة غير موجودة — تحقق من الاسم';
-                            requestUIUpdate();
-                            return;
-                        }
+                    var rr = await resolveChatroomAllVariants(slug, bot);
+                    if (rr.id) {
+                        cid = rr.id;
+                    } else if (rr.notFound) {
+                        ch.status = 'off';
+                        ch.error = 'القناة غير موجودة — تحقق من الاسم';
+                        requestUIUpdate();
+                        return;
                     } else {
-                        var chData = await fetchChannel(slug, bot);
-                        cid = extractChatroomId(chData);
-                        if (!cid) cid = await fetchChatroomId(slug, bot);
+                        throw new Error('تعذر جلب غرفة الشات');
                     }
                     if (cid) _chatroomCache[ckey] = cid;
                 }
