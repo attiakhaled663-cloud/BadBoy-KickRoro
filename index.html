@@ -44,26 +44,98 @@
     </script>
     <script>
 /* ============================================================
-   api.js — نسخة التطبيق (بدون أي بروكسيات CORS)
+   api.js — نسخة التطبيق (بروكسيات CORS + تراجع تلقائي)
    ------------------------------------------------------------
-   ما تغيّر: أُزيلت كل البروكسيات (codetabs / corsproxy.org /
-   corsfix / allorigins / worker / corsproxy.io) وأصبح كل طلب
-   يذهب مباشرة إلى https://kick.com بنفس الترويسات ونفس شكل
-   المُخرجات تماماً: { res, proxyUsed } مع proxyUsed = -1 دائماً.
-   نفس أسماء الدوال: proxiedFetch / fetchXsrf / refreshXsrf /
-   sendMessage — حتى يعمل كود الواجهة بدون أي تعديل في الاستدعاءات.
+   كل طلب يمر عبر smartFetch: يجرّب الطلب المباشر أولاً، ثم يجرّب
+   البروكسيات بالترتيب حتى ينجح أحدها، مع مهلة لكل محاولة.
+   نفس أسماء الدوال ونفس شكل المُخرجات تماماً: { res, proxyUsed }
+   حيث proxyUsed = -1 يعني طلباً مباشراً، أو رقم البروكسي (0 = الأول).
+
+   ⚠️ تحذير: البروكسيات العامة تمرّ عبرها كل بيانات الطلب
+   (وكذلك ترويسة Authorization التي تحمل التوكن) ويمكن لصاحبها
+   قراءتها، كما أنها تتوقف أو تحدّ الاستخدام دون سابق إنذار.
+   الحل الآمن والثابت: بروكسي خاص بك (Cloudflare Worker) وتضعه في
+   CUSTOM_PROXY_URL بالأسفل.
+
+   للاختبار من كونسول المتصفح:  await kbTestProxies()
    ============================================================ */
 
 var KICK_BASE = 'https://kick.com';
 var $ = function(id) { return document.getElementById(id); };
 
-/* عنصر قديم باقٍ فقط لأن كود الواجهة يقرأ/يكتب عنده عند تصدير
-   واستيراد الإعدادات — لا علاقة له بأي بروكسي الآن. */
-var _bestProxy = -1;
-function saveBestProxy() {}
+/* ==================== إعدادات البروكسيات ==================== */
 
-/* عدّاد فشل قديم ما زال كود الواجهة يكتب فيه — لا أثر له بدون بروكسيات */
+/* ضع هنا رابط البروكسي الخاص بك (الأفضل) — يُجرَّب مباشرة بعد الطلب المباشر.
+   الصيغة: رابط البروكسي ثم encodeURIComponent للهدف، مثال:
+   'https://my-proxy.username.workers.dev/?url='                              */
+var CUSTOM_PROXY_URL = '';
+
+var PROXY_ENABLED        = true;   /* false = تعطيل البروكسيات تماماً (طلبات مباشرة فقط) */
+var PROXY_DIRECT_FIRST   = true;   /* جرّب المباشر أولاً (ينجح داخل kick.com أو عند تفعيل CORS) */
+var PROXY_TIMEOUT        = 7000;   /* مهلة كل محاولة بالميلي ثانية */
+var PROXY_MAX_TRIES      = 6;      /* أقصى عدد بروكسيات يُجرَّب في الطلب الواحد */
+var PROXY_TOTAL_BUDGET   = 22000;  /* ميزانية زمنية كاملة لكل طلب (ms) */
+
+/* قائمة البروكسيات العامة — الترتيب من الأكثر ثباتاً إلى الأقل.
+   post: هل يمرّر طلبات POST؟  wrapper: يرجع JSON بداخله المحتوى. */
+var KB_PROXIES = [];
+if (CUSTOM_PROXY_URL) {
+    KB_PROXIES.push({ name:'custom', post:true, build:function(u){ return CUSTOM_PROXY_URL + encodeURIComponent(u); } });
+}
+KB_PROXIES.push(
+    { name:'allorigins-raw', post:true,  build:function(u){ return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); } },
+    { name:'codetabs',       post:false, build:function(u){ return 'https://api.codetabs.com/v1/proxy?quest=' + u; } },
+    { name:'cors.lol',       post:false, build:function(u){ return 'https://api.cors.lol/?url=' + encodeURIComponent(u); } },
+    { name:'corsfix',        post:true,  build:function(u){ return 'https://proxy.corsfix.com/?' + u; } },
+    { name:'thingproxy',     post:false, build:function(u){ return 'https://thingproxy.freeboard.io/fetch/' + u; } },
+    { name:'cors-anywhere',  post:true,  build:function(u){ return 'https://cors-anywhere.herokuapp.com/' + u; } },
+    { name:'workers.dev',    post:true,  build:function(u){ return 'https://test.cors.workers.dev/?' + u; } },
+    { name:'allorigins-get', post:true,  wrapper:true, build:function(u){ return 'https://api.allorigins.win/get?url=' + encodeURIComponent(u); } },
+    { name:'corsproxy.io',   post:true,  build:function(u){ return 'https://corsproxy.io/?url=' + encodeURIComponent(u); } }
+);
+
+/* عنصر قديم باقٍ لأن كود الواجهة يقرأ/يكتب عنده عند تصدير واستيراد الإعدادات */
+var _bestProxy = -1;
+function saveBestProxy() { _bestProxy = -1; }
+
+/* عدّاد فشل كل بروكسي — كود الواجهة ما زال يقرأ فيه */
 var _proxyFailCount = {};
+
+function _kbCountOk(i)   { if (typeof i === 'number') { _proxyFailCount[i] = 0; if (i >= 0) _bestProxy = i; } }
+function _kbCountFail(i) { if (typeof i === 'number') { _proxyFailCount[i] = (_proxyFailCount[i] || 0) + 1; } }
+
+/* ترتيب المحاولات: آخر بروكسي ناجح أولاً، ثم باقي القائمة */
+function _kbProxyOrder(preferred) {
+    var order = [], i;
+    if (typeof preferred === 'number' && preferred >= 0 && preferred < KB_PROXIES.length) order.push(preferred);
+    for (i = 0; i < KB_PROXIES.length; i++) { if (order.indexOf(i) === -1) order.push(i); }
+    return order;
+}
+
+/* ردّ بديل بنفس واجهة Response — لتفكيك تغليف {contents, status} */
+function _mkRes(text, status, headers) {
+    status = (typeof status === 'number' && status) ? status : 200;
+    var h = headers || {};
+    return {
+        ok: status >= 200 && status < 300,
+        status: status,
+        statusText: '',
+        headers: { get: function(k){ k = String(k || '').toLowerCase(); return (h[k] !== undefined ? h[k] : null); } },
+        text: function(){ return Promise.resolve(String(text == null ? '' : text)); },
+        json: function(){ return Promise.resolve(JSON.parse(String(text == null ? '' : text))); }
+    };
+}
+
+/* هل الخطأ صادر من البروكسي نفسه (حصة/مفتاح/حظر) وليس من Kick؟ */
+function _kbIsProxyOwnError(res, bodySample) {
+    var t = String(bodySample || '').toLowerCase();
+    if (!t) return false;
+    if (/a valid api key is required|rate limit exceeded|too many requests|quota exceeded|upgrade your plan|missing api key|proxy error|not allowed without/.test(t)) return true;
+    if (/error code: 10\d\d/.test(t)) return true;                       /* Cloudflare worker limits */
+    if (t.indexOf('proxy') !== -1 && /(disabled|blocked|denied|abuse|limit|invalid|forbidden)/.test(t)) return true;
+    if (t.indexOf('cloudflare') !== -1 && res && (res.status === 403 || res.status === 429)) return true;
+    return false;
+}
 
 var xsrfToken = '';
 var isDirectMode = false;
@@ -76,7 +148,7 @@ function detectMode() {
 
 /* fetch مع مهلة زمنية حقيقية (يُلغي الطلب عند انتهاء المهلة) */
 async function fetchWithTimeout(url, opts, timeout) {
-    timeout = timeout || 8000;
+    timeout = timeout || PROXY_TIMEOUT;
     if (typeof AbortController === 'undefined') {
         return await Promise.race([
             fetch(url, opts),
@@ -92,16 +164,114 @@ async function fetchWithTimeout(url, opts, timeout) {
     } finally { clearTimeout(timer); }
 }
 
-/* نفس اسم الدالة القديمة ونفس شكل الإرجاع — لكن الطلب مباشر بلا وسيط */
+/* ==========================================================================
+   smartFetch — المحرّك الموحّد: مباشر → بروكسي 1 → بروكسي 2 → ...
+   يُرجع { res, proxyUsed, ok } مع الحفاظ على كائن Response الحقيقي،
+   أي أن .ok / .status / .json() / .text() / .headers.get() تعمل كما هي.
+   ========================================================================== */
+async function smartFetch(url, options, preferredProxy) {
+    options = options || {};
+    var isPost = String(options.method || 'GET').toUpperCase() !== 'GET';
+    var timeout = options.timeout || PROXY_TIMEOUT;
+
+    var opts = Object.assign({}, options);
+    delete opts.timeout;
+    delete opts.preferredProxy;
+    /* البروكسيات تحتاج جسم الطلب كنص عادي */
+    try {
+        if (opts.body && typeof URLSearchParams !== 'undefined' && opts.body instanceof URLSearchParams) {
+            opts.body = opts.body.toString();
+        }
+    } catch(e) {}
+
+    var attempts = [];
+    if (!PROXY_ENABLED) {
+        attempts.push({ idx:-1, name:'direct' });
+    } else {
+        if (PROXY_DIRECT_FIRST) attempts.push({ idx:-1, name:'direct' });
+        var order = _kbProxyOrder(preferredProxy);
+        for (var i = 0; i < order.length; i++) {
+            if (attempts.length >= (PROXY_MAX_TRIES + 1)) break;
+            attempts.push({ idx: order[i], name: KB_PROXIES[order[i]].name });
+        }
+        if (!PROXY_DIRECT_FIRST) attempts.push({ idx:-1, name:'direct' });
+    }
+
+    var started  = Date.now();
+    var lastRes  = null;
+    var lastErr  = null;
+    var lastIdx  = -1;
+
+    for (var a = 0; a < attempts.length; a++) {
+        var at = attempts[a];
+        if (a > 0 && (Date.now() - started) > PROXY_TOTAL_BUDGET) break;
+
+        var target = url;
+        if (at.idx >= 0) {
+            var px = KB_PROXIES[at.idx];
+            if (!px) continue;
+            if (isPost && !px.post) continue;          /* بروكسي لا يدعم POST */
+            try { target = px.build(url); } catch(e) { continue; }
+        }
+
+        var o = Object.assign({}, opts);
+        if (at.idx >= 0) { o.credentials = 'omit'; o.cache = 'no-store'; }
+
+        var r;
+        try {
+            r = await fetchWithTimeout(target, o, timeout);
+        } catch(e) {
+            lastErr = e; lastIdx = at.idx;
+            if (at.idx >= 0) _kbCountFail(at.idx);
+            continue;
+        }
+
+        /* بروكسيات ترجع { contents, status:{http_code} } — نفكّها لواجهة Response */
+        if (at.idx >= 0 && KB_PROXIES[at.idx].wrapper) {
+            try {
+                var wrappedTxt = (typeof r.clone === 'function') ? await r.clone().text() : await r.text();
+                var j = JSON.parse(wrappedTxt);
+                var code = 200;
+                try { code = parseInt((j && j.status && (j.status.http_code || j.status.httpCode)) || 200, 10) || 200; } catch(e2) {}
+                r = _mkRes((j && j.contents != null) ? j.contents : '', code);
+            } catch(e) {
+                _kbCountFail(at.idx); lastErr = e; lastIdx = at.idx; continue;
+            }
+        }
+
+        if (r && r.ok) { _kbCountOk(at.idx); return { res: r, proxyUsed: at.idx, ok: true }; }
+
+        /* هل الخطأ من البروكسي نفسه؟ إذن نكمل للبروكسي التالي */
+        if (at.idx >= 0) {
+            var sample = '';
+            try {
+                if (typeof r.clone === 'function') sample = String(await r.clone().text() || '').slice(0, 400);
+            } catch(e) {}
+            if (_kbIsProxyOwnError(r, sample)) { _kbCountFail(at.idx); lastRes = r; lastIdx = at.idx; continue; }
+        }
+
+        /* خطأ حقيقي وصل من Kick: 401/403/404/419/429 → لا داعي لتجربة بروكسي آخر */
+        lastRes = r; lastIdx = at.idx;
+        if (r && (r.status === 401 || r.status === 403 || r.status === 404 || r.status === 419 || r.status === 422 || r.status === 429)) {
+            return { res: r, proxyUsed: at.idx, ok: false };
+        }
+    }
+
+    if (lastRes) return { res: lastRes, proxyUsed: lastIdx, ok: false };
+    return { res: null, proxyUsed: -1, ok: false, error: lastErr || new Error('all_proxies_failed') };
+}
+
+/* نفس اسم الدالة القديمة ونفس شكل الإرجاع — لكن مع تراجع تلقائي بين البروكسيات */
 async function proxiedFetch(kickPath, options) {
     options = options || {};
     var method = options.method || 'GET';
     var body = options.body || null;
     var headers = options.headers || {};
-    var timeout = options.timeout || 8000;
+    var timeout = options.timeout || PROXY_TIMEOUT;
     var skipAuth = options.skipAuth || false;
     var token = options.token || '';
     var isPost = (method !== 'GET');
+    var preferred = (typeof options.preferredProxy === 'number') ? options.preferredProxy : _bestProxy;
 
     var defHeaders = { 'Accept':'application/json' };
     if (isPost) defHeaders['Content-Type'] = 'application/json';
@@ -110,12 +280,38 @@ async function proxiedFetch(kickPath, options) {
     if (xsrfToken) defHeaders['X-XSRF-TOKEN'] = xsrfToken;
     for (var k in headers) defHeaders[k] = headers[k];
 
-    var fetchOpts = { method:method, headers:defHeaders, credentials:isDirectMode ? 'include' : 'omit' };
+    var fetchOpts = { method:method, headers:defHeaders, credentials:isDirectMode ? 'include' : 'omit', timeout:timeout };
     if (body && isPost) fetchOpts.body = JSON.stringify(body);
 
-    var res = await fetchWithTimeout(KICK_BASE + kickPath, fetchOpts, timeout);
-    return { res: res, proxyUsed: -1 };
+    var out = await smartFetch(KICK_BASE + kickPath, fetchOpts, preferred);
+    if (out && out.res) {
+        if (out.proxyUsed >= 0) _bestProxy = out.proxyUsed;
+        return { res: out.res, proxyUsed: out.proxyUsed };
+    }
+    throw (out && out.error) || new Error('فشل الاتصال');
 }
+
+/* أداة تشخيص: من كونسول المتصفح اكتب  await kbTestProxies()
+   لتظهر لك أي البروكسيات يعمل الآن من جهازك. */
+async function kbTestProxies() {
+    var testUrl = KICK_BASE + '/api/v1/ping';
+    var report = [];
+    var list = [{ name:'direct', build:function(u){ return u; } }].concat(KB_PROXIES);
+    for (var i = 0; i < list.length; i++) {
+        var px = list[i], target = testUrl, t0 = Date.now();
+        try {
+            target = px.build(testUrl);
+            var r = await fetchWithTimeout(target, { method:'GET', cache:'no-store' }, PROXY_TIMEOUT);
+            report.push({ proxy: px.name, status: r.status, ok: r.ok, ms: Date.now() - t0, url: target });
+        } catch(e) {
+            report.push({ proxy: px.name, status: 0, ok: false, ms: Date.now() - t0, error: String(e && e.message || e), url: target });
+        }
+    }
+    try { console.table ? console.table(report) : console.log(report); } catch(e) { console.log(report); }
+    return report;
+}
+try { window.kbTestProxies = kbTestProxies; window.KB_PROXIES = KB_PROXIES; } catch(e) {}
+
 
 /* قراءة كوكي (تفيد في وضع kick.com المباشر فقط) */
 function _readCookie(name) {
@@ -444,6 +640,7 @@ async function sendMessage(chatroomId, content, token, preferredProxy) {
         }
         .btn:active:not(:disabled) { transform:scale(.97); }
         .btn:disabled { opacity:.35; cursor:not-allowed; }
+        #uRepeat:disabled, #cRepeat:disabled { opacity:.4; cursor:not-allowed; text-align:center; font-size:20px; font-weight:700; }
         .btn-fire { background:linear-gradient(135deg,#53fc18,#9dff6b); color:#000; text-shadow:none; }
         .btn-fire:hover:not(:disabled) { box-shadow:0 0 24px rgba(83,252,24,.05); transform:translateY(-1px); }
         .btn-fire.active-run { background:var(--danger); color:#fff; border:2px solid #fff; }
@@ -1799,9 +1996,12 @@ async function kickLiveBatchOfficial(slugs) {
         for (var attempt = 0; attempt < 2; attempt++) {
             try {
                 var token = await kickGetApiToken(attempt === 1);
-                var r = await fetch('https://api.kick.com/public/v1/channels?' + qs, {
-                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-                });
+                var _bo = await smartFetch('https://api.kick.com/public/v1/channels?' + qs, {
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                    timeout: 10000
+                }, _bestProxy);
+                var r = _bo && _bo.res;
+                if (!r) break;
                 if (r.status === 401 && attempt === 0) { _kickAppToken = null; try { sessionStorage.removeItem('kick_access_token'); } catch (e) {} continue; }
                 if (!r.ok) break;
                 var d = await r.json().catch(function(){ return null; });
@@ -1888,20 +2088,19 @@ async function tryFetchWithAllProxies(kickPath, options) {
     options = options || {};
     var timeout = options.timeout || 8000;
     var fullUrl = KICK_BASE + kickPath;
-    /* طلب مباشر إلى kick.com — لا يوجد أي وسيط CORS */
-    try {
-        var res = await Promise.race([
-            fetch(fullUrl, {method:'GET', headers:{'Accept':'application/json'}, credentials:isDirectMode?'include':'omit'}),
-            new Promise(function(_, reject){ setTimeout(function(){ reject(new Error('timeout')); }, timeout); })
-        ]);
-        if (res && res.ok) {
-            _proxyFailCount[-1] = 0;
-            return { res: res, proxyUsed: -1, ok: true };
-        }
-        if (res && res.status === 404) {
-            return { ok: false, notFound: true };
-        }
-    } catch(e) {}
+    var preferred = (typeof options.preferredProxy === 'number') ? options.preferredProxy : _bestProxy;
+    /* المباشر أولاً ثم البروكسيات بالترتيب (smartFetch يتولى التراجع) */
+    var out = await smartFetch(fullUrl, {
+        method: 'GET',
+        headers: { 'Accept':'application/json' },
+        credentials: isDirectMode ? 'include' : 'omit',
+        timeout: timeout
+    }, preferred);
+    if (out && out.res) {
+        if (out.res.ok) { _proxyFailCount[out.proxyUsed] = 0; return { res: out.res, proxyUsed: out.proxyUsed, ok: true }; }
+        if (out.res.status === 404) { return { ok: false, notFound: true }; }
+        return { ok: false, notFound: false, res: out.res, proxyUsed: out.proxyUsed };
+    }
     return { ok: false, notFound: false };
 }
 
@@ -2072,6 +2271,7 @@ function defaultUnified() {
 }
 function getBotUnified(b) {
     if (!b.unified) b.unified = defaultUnified();
+    if (typeof b.unified.isInfinite !== 'boolean') b.unified.isInfinite = true;
     return b.unified;
 }
 
@@ -2283,7 +2483,24 @@ function exemptSelectAll(on) {
     toast(on ? 'تم استثناء كل القنوات (' + exemptChannels.length + ')' : 'تم مسح كل الاستثناءات', 'i');
 }
 
+/* حقل عدد الإرسال: في الوضع اللانهائي يظهر ∞ ويكون معتماً ومقفلاً، وإلا يرجع رقماً عادياً */
+function _setRepeatField(id, infinite, repeat) {
+    var el = $(id);
+    if (!el) return;
+    if (infinite) {
+        el.type = 'text';
+        el.value = '\u221E';
+        el.disabled = true;
+    } else {
+        el.type = 'number';
+        el.disabled = false;
+        var n = parseInt(repeat) || 1;
+        el.value = n < 1 ? 1 : n;
+    }
+}
+
 function getEffectiveChannelSettings(ch, bot) {
+    if (typeof ch.isInfinite !== 'boolean') ch.isInfinite = true;
     var u = bot ? getBotUnified(bot) : null;
     if (u && u.enabled) {
         if (isUnifiedExcludedChannel(u, ch.slug)) {
@@ -2323,8 +2540,7 @@ function openUnifiedSettings() {
     var u = getBotUnified(b);
     $('unifiedModalTitle').textContent = 'إعدادات موحدة: ' + b.username;
     $('uMessages').value = u.messages || '';
-    $('uRepeat').value = u.isInfinite ? 0 : (u.repeat || 1);
-    $('uRepeat').disabled = u.isInfinite;
+    _setRepeatField('uRepeat', u.isInfinite, u.repeat);
     $('uInterval').value = u.interval || 5;
     $('uDelayMin').value = u.delayMin || 3;
     $('uDelayMax').value = u.delayMax || 7;
@@ -2752,7 +2968,7 @@ function xferFinalChannel(ch, g, guard, gBase) {
     var messages = (ch.messages && String(ch.messages).trim()) ? ch.messages : (g.messages || '');
     var interval = Math.max(1, Math.round(pick(ch.interval, pick(g.interval, 5)) || 5));
     var repeat = Math.max(1, Math.round(pick(ch.repeat, pick(g.repeat, 1)) || 1));
-    var isInfinite = !!pick(ch.isInfinite, pick(g.isInfinite, false));
+    var isInfinite = !!pick(ch.isInfinite, pick(g.isInfinite, true));
     var enabled = pick(ch.enabled, pick(g.enabled, true));
     var randomDelay = !!pick(ch.randomDelay, pick(g.randomDelay, false));
     var dMin = Math.max(1, Math.round(pick(ch.delayMin, pick(g.delayMin, 3)) || 3));
@@ -3074,9 +3290,7 @@ function uToggleInfinite() {
     var u = getBotUnified(b);
     u.isInfinite = !u.isInfinite;
     setToggle('uTgInfinite', u.isInfinite);
-    $('uRepeat').disabled = u.isInfinite;
-    if (u.isInfinite) $('uRepeat').value = 0;
-    else if ($('uRepeat').value == 0) $('uRepeat').value = 1;
+    _setRepeatField('uRepeat', u.isInfinite, 1);
 }
 
 function uToggleRandomDelay() {
@@ -3982,7 +4196,7 @@ function loadFromStorage() {
                         messages: ch.messages || '',
                         interval: ch.interval || 5,
                         repeat: ch.repeat || 1,
-                        isInfinite: !!ch.isInfinite,
+                        isInfinite: ch.isInfinite !== false,
                         enabled: ch.enabled !== false,
                         randomDelay: !!ch.randomDelay,
                         delayMin: ch.delayMin || 240,
@@ -4004,7 +4218,7 @@ function loadFromStorage() {
                         messages: b.messages || '',
                         interval: b.interval || 5,
                         repeat: b.repeat || 1,
-                        isInfinite: !!b.isInfinite,
+                        isInfinite: b.isInfinite !== false,
                         enabled: true,
                         randomDelay: false,
                         delayMin: 3, delayMax: 7,
@@ -4166,9 +4380,11 @@ async function _rawDirect(path, token, timeout){
     var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var timer = setTimeout(function(){ if (ctrl){ try { ctrl.abort(); } catch(e){} } }, timeout);
     try {
-        var opts = { method:'GET', headers:headers, credentials:isDirectMode?'include':'omit' };
-        if (ctrl) opts.signal = ctrl.signal;
-        return await fetch(KICK_BASE + path, opts);
+        var opts = { method:'GET', headers:headers, credentials:isDirectMode?'include':'omit', timeout:timeout };
+        if (ctrl) { try { opts = Object.assign({}, opts); opts.signal = ctrl.signal; } catch(e){} }
+        var _rawOut = await smartFetch(KICK_BASE + path, opts, _bestProxy);
+        if (_rawOut && _rawOut.res) return _rawOut.res;
+        throw (_rawOut && _rawOut.error) || new Error('connection_failed');
     } finally { clearTimeout(timer); }
 }
 
@@ -4742,11 +4958,14 @@ async function kickGetApiToken(forceNew) {
         client_id: KICK_CLIENT_ID,
         client_secret: KICK_CLIENT_SECRET
     });
-    var r = await fetch('https://id.kick.com/oauth/token', {
+    var _tokOut = await smartFetch('https://id.kick.com/oauth/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body
-    });
+        body: body,
+        timeout: 10000
+    }, _bestProxy);
+    var r = _tokOut && _tokOut.res;
+    if (!r) throw new Error('token_failed');
     var d = await r.json().catch(function(){ return {}; });
     if (!r.ok || !d.access_token) throw new Error('token_failed');
     _kickAppToken = d.access_token;
@@ -4766,9 +4985,12 @@ async function kickVerifyChannelApi(typed) {
         for (var attempt = 0; attempt < 2; attempt++) {
             try {
                 var token = await kickGetApiToken(attempt === 1);
-                var r = await fetch('https://api.kick.com/public/v1/channels?slug=' + encodeURIComponent(variants[vi]), {
-                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' }
-                });
+                var _vc = await smartFetch('https://api.kick.com/public/v1/channels?slug=' + encodeURIComponent(variants[vi]), {
+                    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' },
+                    timeout: 10000
+                }, _bestProxy);
+                var r = _vc && _vc.res;
+                if (!r) { sawError = true; break; }
                 if (r.status === 401 && attempt === 0) { _kickAppToken = null; try { sessionStorage.removeItem('kick_access_token'); } catch (e) {} continue; }
                 if (!r.ok && r.status !== 404) { sawError = true; break; }
                 var d = await r.json().catch(function(){ return null; });
@@ -5109,8 +5331,11 @@ function ensureStickersList() {
             console.error('فشل تحميل الرسائل من السيرفر');
             return Promise.resolve('');
         }
-        return fetch(STICKERS_JSON_URLS[idx], { cache: 'no-store' })
-            .then(function (r) {
+        /* عبر سلسلة البروكسيات: يعمل محلياً وعند حجب raw.githubusercontent */
+        return smartFetch(STICKERS_JSON_URLS[idx], { cache: 'no-store', timeout: PROXY_TIMEOUT }, _bestProxy)
+            .then(function (_sr) {
+                var r = _sr && _sr.res;
+                if (!r) throw new Error('no_response');
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 return r.text();
             })
@@ -5138,8 +5363,8 @@ function openChannelSettings(slug) {
     activeChannelSlug = slug;
     $('channelModalTitle').textContent = 'قناة: ' + slug;
     $('cMessages').value = ch.messages || '';
-    $('cRepeat').value = ch.isInfinite ? 0 : (ch.repeat || 1);
-    $('cRepeat').disabled = ch.isInfinite;
+    if (typeof ch.isInfinite !== 'boolean') ch.isInfinite = true;
+    _setRepeatField('cRepeat', ch.isInfinite, ch.repeat);
     $('cInterval').value = ch.interval || 5;
     $('cDelayMin').value = ch.delayMin || 3;
     $('cDelayMax').value = ch.delayMax || 7;
@@ -5185,9 +5410,7 @@ function cToggleInfinite() {
     if (!ch) return;
     ch.isInfinite = !ch.isInfinite;
     setToggle('tgChannelInfinite', ch.isInfinite);
-    $('cRepeat').disabled = ch.isInfinite;
-    if (ch.isInfinite) $('cRepeat').value = 0;
-    else if ($('cRepeat').value == 0) $('cRepeat').value = 1;
+    _setRepeatField('cRepeat', ch.isInfinite, 1);
     persist();
 }
 
@@ -6379,9 +6602,11 @@ async function kickHandleCallback(){
       client_secret:KICK_CLIENT_SECRET,redirect_uri:KICK_REDIRECT_URI,
       code_verifier:verifier
     });
-    const r=await fetch('https://id.kick.com/oauth/token',{
-      method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body
-    });
+    const _co=await smartFetch('https://id.kick.com/oauth/token',{
+      method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body,timeout:10000
+    },_bestProxy);
+    const r=_co&&_co.res;
+    if(!r){__silentAlert('Kick رفض تسجيل الدخول. راجع بيانات التطبيق وRedirect URL.');return;}
     const d=await r.json().catch(()=>({}));
     if(!r.ok||!d.access_token){console.error(d);__silentAlert('Kick رفض تسجيل الدخول. راجع بيانات التطبيق وRedirect URL.');return;}
     sessionStorage.setItem('kick_access_token',d.access_token);
@@ -6396,7 +6621,9 @@ async function kickOfficialRefreshStatus(){
   if(!el||!btn)return;
   if(!token){el.textContent='غير متصل';el.classList.remove('on','err');return;}
   try{
-    const r=await fetch('https://api.kick.com/public/v1/users',{headers:{Authorization:'Bearer '+token}});
+    const _uo=await smartFetch('https://api.kick.com/public/v1/users',{headers:{Authorization:'Bearer '+token},timeout:8000},_bestProxy);
+    const r=_uo&&_uo.res;
+    if(!r)throw Error('API error');
     const d=await r.json().catch(()=>({}));
     if(!r.ok)throw Error('API error');
     const u=Array.isArray(d.data)?d.data[0]:d.data;
@@ -6466,6 +6693,10 @@ var _tcRunning             = false;
 var _TC_PROXIES = [
   { name:'direct', build:function(u){ return u; } }
 ];
+/* نفس قائمة البروكسيات المستخدمة في باقي التطبيق (تُبنى تلقائياً) */
+for (var _kbPx = 0; _kbPx < KB_PROXIES.length; _kbPx++) {
+  (function(px){ _TC_PROXIES.push({ name: px.name, build: px.build }); })(KB_PROXIES[_kbPx]);
+}
 
 async function _tcGet(url, token, timeout){
   var headers = { 'Accept':'application/json', 'Origin':KICK_BASE };
@@ -6476,7 +6707,18 @@ async function _tcGet(url, token, timeout){
   try {
     var opts = { method:'GET', headers:headers, credentials:(typeof isDirectMode !== 'undefined' && isDirectMode) ? 'include' : 'omit' };
     if (ctrl) opts.signal = ctrl.signal;
-    return await fetch(url, opts);
+    var _tcRes = await fetch(url, opts);
+    /* لا نسمح لخطأ صادر من البروكسي نفسه أن يُفسَّر كرفض توكن من Kick */
+    try {
+      if (_tcRes && typeof _kbIsProxyOwnError === 'function') {
+        var _tcSample = '';
+        if (typeof _tcRes.clone === 'function') { _tcSample = String(await _tcRes.clone().text() || '').slice(0, 400); }
+        if ((_tcRes.status === 401 || _tcRes.status === 403 || _tcRes.status === 429) && _kbIsProxyOwnError(_tcRes, _tcSample)) {
+          return _mkRes('{"proxy_error":true}', 502);
+        }
+      }
+    } catch(e){}
+    return _tcRes;
   } finally { clearTimeout(timer); }
 }
 
